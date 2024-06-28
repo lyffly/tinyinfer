@@ -1,37 +1,20 @@
 # tinyinfer
 
 #### 介绍
-based on mlir
+一个推理框架，目标是最精简的技术实现，开发中。
+长期计划如下，现在还比较早期，晚上和周末才有时间更新
+1. 使用C++实现自定义CUDA算子
+2. 支持ONNX模型（CV模型）
+3. 支持GGUF的模型（大模型）
+4. 使用Python实现前端接口
+5. 支持PPQ量化
+6. 支持FP16推理
+7. 支持INT8推理
 
-#### 软件架构
-软件架构说明
+#### 使用Renset18测试
+```shell
+python3 test_resnet18.py
+```
 
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 
+不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。
