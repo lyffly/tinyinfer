@@ -10,6 +10,7 @@ class Network():
         self.run_orders = []
         self.input_names = []
         self.output_names = []
+        self.config = None
     
     def prepare(self, ins = {}):
         self.bind_all_edges()
@@ -26,8 +27,11 @@ class Network():
     def run(self, ins = {}):
         # 进行每一个node的推理
         for nodename in self.run_orders:
+            if self.config.log_verbose:
+                print("[run] node name: ", nodename)
             self.nodes[nodename].run()
         # 获取输出
+        print("[run] network run end ! \n", "*" * 80)
     
     def bind_all_edges(self):
         for nodename in self.run_orders:

@@ -41,13 +41,10 @@ class ConvNode(Node):
         self.outc = 0
     
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge = self.all_edges[self.input_names[0]]
         w_edge = self.all_edges[self.input_names[1]]
         b_edge = self.all_edges[self.input_names[2]]
@@ -57,7 +54,6 @@ class ConvNode(Node):
         
     
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
         weights_edge = self.all_edges[self.input_names[1]]
         #bias_edge = self.all_edges[self.input_names[2]]
@@ -91,13 +87,10 @@ class ActivationNode(Node):
         self.type = "Activation"
     
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "Relu":
@@ -129,13 +122,10 @@ class ElementwiseNode(Node):
         self.type = "Elementwise"
     
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge0 = self.all_edges[self.input_names[0]]
         in_edge1 = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
@@ -168,13 +158,10 @@ class PoolNode(Node):
         self.type = "pool"
 
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
@@ -226,13 +213,10 @@ class GemmNode(Node):
         self.type = "Gemm"
     
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge = self.all_edges[self.input_names[0]]
         w_edge = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
@@ -273,13 +257,10 @@ class FlattenNode(Node):
         self.type = "Flatten"
     
     def run(self):
-        print("[run] node name: ", self.name)
         for name in self.input_names:
             edge = self.all_edges[name]
-            print("    in shape : ", edge.shape)
         for name in self.output_names:
             edge = self.all_edges[name]
-            print("    out shape : ", edge.shape)
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.tensor.data_ptr = in_edge.tensor.data_ptr

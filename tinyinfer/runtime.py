@@ -78,6 +78,7 @@ def build_network(bin_data, config):
     nodes = bin_data["nodes"]
     tenor_data = bin_data["tensor_data"]
     network = Network()
+    network.config = config
     network.input_names = bin_data["inputs"]
     network.output_names = bin_data["outputs"]
     # all nodes
