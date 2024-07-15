@@ -131,6 +131,7 @@ class ElementwiseNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "Add":
             out_edge.tensor = in_edge0.tensor + in_edge1.tensor
+        print("")
     
     def infer_shapes(self):
         print("[infer shape] node name: ", self.name)
@@ -263,7 +264,7 @@ class FlattenNode(Node):
             edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.tensor.data_ptr = in_edge.tensor.data_ptr
+        out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
     
     def infer_shapes(self):
         print("[infer shape] node name: ", self.name)

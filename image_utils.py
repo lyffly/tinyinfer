@@ -19,3 +19,11 @@ def read_image(name, hw=(224,224)):
     img = cv2.imread(name,1)
     img = cv2.resize(img, hw, interpolation=cv2.INTER_NEAREST)
     return img
+
+
+def get_imagenet_labels(index):
+    import json
+    labels = []
+    with open('data/imagenet_labels.json') as f:
+        labels = json.load(f)
+    return labels[index]

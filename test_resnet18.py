@@ -1,9 +1,13 @@
 import torch
 import cv2
+import numpy as np
+from scipy.special import softmax
+np.set_printoptions(precision=3)
 
 from tinyinfer.runtime import import_model, build_network
 from tinyinfer.config import Config
 from image_utils import *
+
 
 if __name__ == "__main__":
     img_name = "data/eagle.jpg"
@@ -27,5 +31,8 @@ if __name__ == "__main__":
         results = network.run(inputs)
     
     out_tensor = results["output"].numpy()
+    out_tensor = softmax(out_tensor, axis=1)
     print(out_tensor.shape)
-    print(out_tensor)
+    print(np.max(out_tensor))
+    print(get_imagenet_labels(np.argmax(out_tensor)))
+    
