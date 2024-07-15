@@ -6,6 +6,7 @@ build
 cmake-build-debug
 cmake-build-release
 data/*.bin
+__pycache__/
 tinyinfer/__pycache__
 tinyinfer/__pycache__/
 tinyinfer/__pycache__/*.pyc

@@ -31,8 +31,14 @@ class Network():
                 print("[run] node name: ", nodename)
             self.nodes[nodename].run()
         # 获取输出
+        outs = {}
+        for name in self.output_names:
+            out_tensor = self.edges[name].tensor
+            outs[name] = out_tensor
         print("[run] network run end ! \n", "*" * 80)
-    
+
+        return outs
+        
     def bind_all_edges(self):
         for nodename in self.run_orders:
             self.nodes[nodename].bing_all_edges(self.edges)
