@@ -5,6 +5,10 @@ build
 .idea
 cmake-build-debug
 cmake-build-release
+data/*.bin
+tinyinfer/__pycache__
+tinyinfer/__pycache__/
+tinyinfer/__pycache__/*.pyc
 
 # Compiled Object files
 *.slo
