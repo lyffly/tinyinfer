@@ -1,0 +1,3 @@
+[submodule "3rd/pybind11"]
+	path = 3rd/pybind11
+	url = https://gitee.com/yunfeiliu/pybind11
