@@ -1,6 +1,7 @@
 import simplejson as json
 import numpy as np
 import os
+from copy import deepcopy
 
 from .nodes import *
 from .edges import *
@@ -83,6 +84,7 @@ def build_network(bin_data, config):
     network.output_names = bin_data["outputs"]
     # all nodes
     for key in nodes.keys():
+        network.node_num += 1
         value = nodes[key]
         
         attrbiute = value["attrbiute"]
@@ -168,6 +170,7 @@ def build_network(bin_data, config):
     
     # all oonstant edges
     for key in edges:
+        network.edges_num += 1
         value = edges[key]
         edge = Edge()
         edge.name = value["name"]
@@ -176,7 +179,9 @@ def build_network(bin_data, config):
         edge.is_constant = True
         edge.type = "constant" # constant input output variable
         # edge.tensor = torch.zeros(edge.shape, dtype=torch.float, requires_grad=False)
-        edge.tensor = torch.from_numpy(np.frombuffer(tenor_data[edge.name], dtype=np.float32)).reshape(edge.shape)
+        np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float32))
+        edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
+        edge.tensor.requires_grad_(False)
         network.edges[edge.name] = edge
     
     # networks in out edges

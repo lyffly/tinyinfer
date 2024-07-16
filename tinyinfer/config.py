@@ -7,6 +7,7 @@ class Config:
         self.bf16 = False
         
         self.use_gpu = True
+        self.gpu_device = 0
         self.use_cpu = False
         
         self.use_cudnn = True
@@ -15,3 +16,5 @@ class Config:
         
         self.debug = False
         self.log_verbose = False
+        
+        

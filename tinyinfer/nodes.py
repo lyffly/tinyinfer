@@ -70,8 +70,7 @@ class ConvNode(Node):
         out_edge.shape = [n,oc,oh,ow]
         out_edge.dtype = in_edge.dtype
         out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        #print(out_edge)
-        print("     -> ", out_edge.shape)
+        
     
     def infer_types(self):
         pass
@@ -97,16 +96,14 @@ class ActivationNode(Node):
             out_edge.tensor = torch.max(torch.tensor(0), in_edge.tensor)
     
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
-
         n,c,h,w = in_edge.shape
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = in_edge.shape
         out_edge.dtype = in_edge.dtype
         out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        print("     -> ", out_edge.shape)
+
         
     def infer_types(self):
         pass
@@ -131,19 +128,15 @@ class ElementwiseNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "Add":
             out_edge.tensor = in_edge0.tensor + in_edge1.tensor
-        print("")
     
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
-
         n,c,h,w = in_edge.shape
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = in_edge.shape
         out_edge.dtype = in_edge.dtype
         out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        print("     -> ", out_edge.shape)
     
     def infer_types(self):
         pass
@@ -174,7 +167,6 @@ class PoolNode(Node):
 
 
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
         n,c,h,w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
@@ -198,7 +190,7 @@ class PoolNode(Node):
             out_edge.dtype = in_edge.dtype
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
 
-        print("     -> ", out_edge.shape)
+
         
     def infer_types(self):
         pass
@@ -227,7 +219,6 @@ class GemmNode(Node):
             out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
     
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
         weights_edge = self.all_edges[self.input_names[1]]
         m, k = in_edge.shape
@@ -241,7 +232,7 @@ class GemmNode(Node):
         out_edge.shape = [m, n]
         out_edge.dtype = in_edge.dtype
         out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        print("     -> ", out_edge.shape)
+
         
     
     def infer_types(self):
@@ -267,7 +258,6 @@ class FlattenNode(Node):
         out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
     
     def infer_shapes(self):
-        print("[infer shape] node name: ", self.name)
         in_edge = self.all_edges[self.input_names[0]]
         n,c,h,w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
@@ -275,7 +265,7 @@ class FlattenNode(Node):
             out_edge.shape = [n, c*h*w]
             out_edge.dtype = in_edge.dtype
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        print("     -> ", out_edge.shape)
+
     
     def infer_types(self):
         pass

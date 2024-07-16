@@ -77,4 +77,16 @@ def data_type_onnx_to_np(type):
         raise TypeError
 
 
-  
+def get_gpu_info():
+    from cuda import cudart
+    _, device_num = cudart.cudaGetDeviceCount()
+    if device_num <= 0:
+        print("[Error] can not find gpu !!!!")
+    else : 
+        for i in range(device_num):
+            _, prop = cudart.cudaGetDeviceProperties(i)
+            print("device index: ", i)
+            print("    name: ", str(prop.name))
+            print("    total mem (Gb): ", prop.totalGlobalMem/1024/1024/1024)
+    
+    return device_num
