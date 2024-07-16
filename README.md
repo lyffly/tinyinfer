@@ -21,7 +21,7 @@ python3 test_resnet18.py
 ##### 性能
 ，测试 Resnet18 FPS性能为：     
 2024-7-15 FPS=79 (cpu)    
-2024-7-16 FPS=804 (use pytorch backend, FP32, 显卡为：3070)   
+2024-7-16 FPS=793 (use pytorch backend, FP32, 显卡为：3070)   
 
 #### 
 不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。

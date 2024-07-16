@@ -32,11 +32,12 @@ if __name__ == "__main__":
     network.prepare(inputs)
     # warup
     results = network.run(inputs)
+    cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 
     for i in range(10):
         results = network.run(inputs)
-    
+    cudart.cudaDeviceSynchronize()
     end = time.time()
     fps = 10.0/(end - start)
     out_tensor = results["output"].numpy()

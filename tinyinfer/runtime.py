@@ -84,7 +84,6 @@ def build_network(bin_data, config):
     network.output_names = bin_data["outputs"]
     # all nodes
     for key in nodes.keys():
-        network.node_num += 1
         value = nodes[key]
         
         attrbiute = value["attrbiute"]
@@ -170,7 +169,6 @@ def build_network(bin_data, config):
     
     # all oonstant edges
     for key in edges:
-        network.edges_num += 1
         value = edges[key]
         edge = Edge()
         edge.name = value["name"]
@@ -213,5 +211,7 @@ def build_network(bin_data, config):
                 edge.name = name
                 edge.type = "variable" # constant input output variable
                 network.edges[edge.name] = edge
+    network.edges_num = len(network.edges)
+    network.nodes_num = len(network.nodes)
     return network
 

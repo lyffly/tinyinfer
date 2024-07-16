@@ -11,7 +11,7 @@ class Network():
         self.input_names = []
         self.output_names = []
         self.config = None
-        self.node_num = 0
+        self.nodes_num = 0
         self.edges_num = 0
     
     def prepare(self, ins = {}):
