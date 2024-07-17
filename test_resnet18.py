@@ -47,6 +47,6 @@ if __name__ == "__main__":
     print("max index:", np.argmax(out_tensor[0]))
     print("imagenet label:", get_imagenet_labels(np.argmax(out_tensor[0])))
     print("fps:", fps)
-          
-    assert np.argmax(out_tensor[0]) == 22
     
+    assert np.argmax(out_tensor[0]) == 22
+

@@ -1,6 +1,14 @@
 # Prerequisites
 *.d
-
+build/
+dist/
+bin/
+_build/
+_generate/
+*.so
+*.py[cod]
+*.egg-info
+*env*
 build
 .idea
 cmake-build-debug
