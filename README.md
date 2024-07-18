@@ -16,6 +16,17 @@
 - [x] 支持ONNX模型（CV模型）
 - [ ] 支持GGUF的模型（大模型）
 
+#### 编译
+```shell
+git clone https://github.com/lyffly/tinyinfer
+# or https://gitee.com/yunfeiliu/tinyinfer
+cd tinyinfer
+git submodule update --init --recursive
+
+python3 setup.py install
+# or python3 setup.py bdist_wheel (build wheel)
+# and pip install dist/*.whl
+```
 
 #### 使用Renset18测试
 

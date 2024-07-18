@@ -6,6 +6,7 @@ from pathlib import Path
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+from setuptools import setup, find_packages
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
@@ -30,6 +31,8 @@ class CMakeBuild(build_ext):
         # Must be in this form due to bug in .resolve() only fixed in Python 3.10+
         ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
         extdir = ext_fullpath.parent.resolve()
+        print("ext_fullpath=",ext_fullpath )
+        print("extdir=",extdir )
 
         # Using this requires trailing slash for auto-detection & inclusion of
         # auxiliary "native" libs
@@ -127,7 +130,9 @@ setup(
     author_email="liuyunfei.1314@163.com",
     description="a home made inference engine",
     long_description="",
-    ext_modules=[CMakeExtension("tinyinfer")],
+    packages=find_packages(),
+    # package_dir={'': 'tinyinfer'},
+    ext_modules=[CMakeExtension("kernels")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
