@@ -16,6 +16,16 @@ PLAT_TO_CMAKE = {
     "win-arm64": "ARM64",
 }
 
+def get_build_type():
+    build_type = 'Release'
+    if os.getenv('DEBUG', default='0').upper() in ['ON', '1', 'YES', 'TRUE', 'Y']:
+        build_type = 'Debug'
+
+    if os.getenv('REL_WITH_DEB_INFO', default='0').upper() in ['ON', '1', 'YES', 'TRUE', 'Y']:
+        build_type = 'RelWithDebInfo'
+
+    return build_type
+
 
 # A CMakeExtension needs a sourcedir instead of a file list.
 # The name must be the _single_ output extension from the CMake build.
@@ -24,6 +34,8 @@ class CMakeExtension(Extension):
     def __init__(self, name: str, sourcedir: str = "") -> None:
         super().__init__(name, sources=[])
         self.sourcedir = os.fspath(Path(sourcedir).resolve())
+        print("CMakeExtension ", name)
+        print("sourcedir ", sourcedir)
 
 
 class CMakeBuild(build_ext):
@@ -37,8 +49,7 @@ class CMakeBuild(build_ext):
         # Using this requires trailing slash for auto-detection & inclusion of
         # auxiliary "native" libs
 
-        debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
-        cfg = "Debug" if debug else "Release"
+        cfg = get_build_type()
 
         # CMake lets you override the generator - we need to check this.
         # Can be set with Conda-Build, for example.
@@ -110,6 +121,7 @@ class CMakeBuild(build_ext):
                 build_args += [f"-j{self.parallel}"]
 
         build_temp = Path(self.build_temp) / ext.name
+        print("build_temp=", build_temp )
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
@@ -120,20 +132,30 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", ".", *build_args], cwd=build_temp, check=True
         )
 
+def find_so_files():
+    import glob
+    names = glob.glob("build/*/*.so")
+    print("so name: ", names)
+    return names
+
 
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="tinyinfer",
-    version="0.0.1",
+    version="0.0.2",
     author="liuyunfei",
     author_email="liuyunfei.1314@163.com",
     description="a home made inference engine",
     long_description="",
-    packages=find_packages(),
-    # package_dir={'': 'tinyinfer'},
     ext_modules=[CMakeExtension("kernels")],
     cmdclass={"build_ext": CMakeBuild},
+    packages=find_packages(),
+    # package_dir={'': 'build'},
+    include_package_data=True,
+    package_data={'': ['build/*/*.so']},
+    #[('', find_so_files())],
+    # package_dir={'': 'tinyinfer'},
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.9",

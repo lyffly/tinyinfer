@@ -23,9 +23,10 @@ git clone https://github.com/lyffly/tinyinfer
 cd tinyinfer
 git submodule update --init --recursive
 
-python3 setup.py install
-# or python3 setup.py bdist_wheel (build wheel)
-# and pip install dist/*.whl
+# build wheel
+python3 setup.py bdist_wheel
+# install
+pip install dist/*.whl
 ```
 
 #### 使用Renset18测试
