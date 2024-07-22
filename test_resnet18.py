@@ -20,8 +20,9 @@ if __name__ == "__main__":
     onnx_name = "data/resnet18.onnx"
     
     config = Config()
-    config.log_verbose = False
-    config.fp32 = True
+    config.log_verbose = True
+    config.fp32 = False
+    config.fp16 = True
     config.use_cpu = False
     config.use_gpu = True
     

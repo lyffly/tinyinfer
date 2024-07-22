@@ -21,7 +21,7 @@ class Node:
         self.all_edges = None
         self.network_precision = "float32"
 
-    def bing_all_edges(self, edges):
+    def bind_all_edges(self, edges):
         self.all_edges = edges
 
     def run(self):
@@ -57,7 +57,8 @@ class ConvNode(Node):
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
         weights_edge = self.all_edges[self.input_names[1]]
-        #bias_edge = self.all_edges[self.input_names[2]]
+        if len(self.input_names) > 2:
+            bias_edge = self.all_edges[self.input_names[2]]
         n,c,h,w = in_edge.shape
         oc,c,kh,kw = weights_edge.shape
         self.inc = c
@@ -74,6 +75,9 @@ class ConvNode(Node):
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
+            weights_edge.tensor = weights_edge.tensor.half()
+            if bias_edge:
+                bias_edge.tensor = bias_edge.tensor.half()
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
     
     def infer_layouts(self):
@@ -228,6 +232,8 @@ class GemmNode(Node):
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
         weights_edge = self.all_edges[self.input_names[1]]
+        if len(self.input_names) > 2:
+            bias_edge = self.all_edges[self.input_names[2]]
         m, k = in_edge.shape
         n = 0
         out_edge = self.all_edges[self.output_names[0]]
@@ -242,6 +248,9 @@ class GemmNode(Node):
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
+            weights_edge.tensor = weights_edge.tensor.half()
+            if bias_edge:
+                bias_edge.tensor = bias_edge.tensor.half()
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
 
@@ -296,18 +305,21 @@ class CastNode(Node):
             edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
-    
+        if self.out_dtype == "float32":
+            out_edge.tensor = in_edge.tensor.float()
+        elif self.out_dtype == "float16":
+            out_edge.tensor = in_edge.tensor.half()
+
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
+        in_edge.dtype = self.in_dtype
         out_edge = self.all_edges[self.output_names[0]]
+        out_edge.shape = in_edge.shape
         if self.out_dtype == "float32":
-            out_edge.shape = in_edge.shape
-            out_edge.dtype = self.out_dtype
+            out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.out_dtype == "float16":
-            out_edge.shape = in_edge.shape
-            out_edge.dtype = self.out_dtype
+            out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
     

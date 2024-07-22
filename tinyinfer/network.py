@@ -1,6 +1,7 @@
 import numpy as np
 from .nodes import *
-
+from .edges import *
+import copy
 
 class Network():
     def __init__(self):
@@ -21,14 +22,58 @@ class Network():
             self.edges[key].shape = in_tensor.shape
             self.edges[key].dtype = in_tensor.dtype
             self.edges[key].tensor = in_tensor
-        
+        # 设置模型精度时，设置node的精度
+        for nodename in self.run_orders:
+            if self.config.fp32:
+                self.nodes[nodename].network_precision = "float32"
+            if self.config.fp16:
+                self.nodes[nodename].network_precision = "float16"
+            elif self.config.int8:
+                self.nodes[nodename].network_precision = "int8"
+        # 设置模型精度时，在输入插入转换节点
+        if self.config.fp16:
+            for io_name, io_edge in copy.copy(self.edges).items():
+                if io_edge.type == "input":
+                    for node_name, _ in copy.copy(self.nodes).items():
+                        if io_name in self.nodes[node_name].input_names:
+                            to_add_edge = Edge()
+                            to_add_edge.type = "variable"
+                            to_add_edge.name = "Cast_out_" + str(len(self.edges))
+                            self.edges[to_add_edge.name] = to_add_edge
+                            to_add_node = CastNode("float32", "float16")
+                            to_add_node.input_names = [io_name]
+                            to_add_node.output_names = [to_add_edge.name]
+                            to_add_node.name = "Cast_" + str(len(self.nodes))
+                            self.nodes[to_add_node.name] = to_add_node
+                            
+                            name_idx = self.nodes[node_name].input_names.index(io_name)
+                            self.nodes[node_name].input_names[name_idx] = to_add_edge.name
+                            run_idx = self.run_orders.index(node_name)
+                            self.run_orders.insert(run_idx, to_add_node.name)
+                if io_edge.type == "output":
+                    for node_name, _ in copy.copy(self.nodes).items():
+                        if io_name in self.nodes[node_name].output_names:
+                            to_add_edge = Edge()
+                            to_add_edge.type = "variable"
+                            to_add_edge.name = "Cast_out_" + str(len(self.edges))
+                            self.edges[to_add_edge.name] = to_add_edge
+                            to_add_node = CastNode("float16", "float32")
+                            to_add_node.input_names = [to_add_edge.name]
+                            to_add_node.output_names = [io_name]
+                            to_add_node.name = "Cast_" + str(len(self.nodes))
+                            self.nodes[to_add_node.name] = to_add_node
+                            
+                            name_idx = self.nodes[node_name].output_names.index(io_name)
+                            self.nodes[node_name].output_names[name_idx] = to_add_edge.name
+                            self.run_orders.append(to_add_node.name)
+        self.bind_all_edges()
         # 形状推导 tensor 进行绑定
         for nodename in self.run_orders:
             self.nodes[nodename].infer_shapes()
             if self.config.log_verbose:
                 print("[infer shape] node name: ", nodename)
                 out_edge = self.edges[self.nodes[nodename].output_names[0]]
-                print("     -> ", out_edge.shape)
+                print("     -> ", out_edge.shape, out_edge.dtype)
         # move edge data to gpu
         for key in self.edges.keys():
             if self.edges[key].type == "input":
@@ -37,7 +82,7 @@ class Network():
                 pass
             elif self.config.use_gpu:
                 self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
-        
+
 
     def run(self, ins = {}):
         # 把输入输出数据转到gpu
@@ -67,6 +112,6 @@ class Network():
 
     def bind_all_edges(self):
         for nodename in self.run_orders:
-            self.nodes[nodename].bing_all_edges(self.edges)
+            self.nodes[nodename].bind_all_edges(self.edges)
 
 
