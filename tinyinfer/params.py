@@ -52,3 +52,7 @@ class ReshapeParams :
     def __init__(self):
         self.shape = None
 
+class CastParams :
+    def __init__(self):
+        self.in_dtype = "float32"
+        self.out_dtype = "float16"

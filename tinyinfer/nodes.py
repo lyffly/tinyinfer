@@ -19,6 +19,7 @@ class Node:
         self.input_layouts = None
         self.output_layouts = None
         self.all_edges = None
+        self.network_precision = "float32"
 
     def bing_all_edges(self, edges):
         self.all_edges = edges
@@ -50,7 +51,7 @@ class ConvNode(Node):
         b_edge = self.all_edges[self.input_names[2]]
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.tensor = F.conv2d(in_edge.tensor, w_edge.tensor, b_edge.tensor, stride=self.params.strides,
-                 padding=self.params.pads[:2], groups=self.params.group)
+                padding=self.params.pads[:2], groups=self.params.group)
         
     
     def infer_shapes(self):
@@ -68,12 +69,12 @@ class ConvNode(Node):
         
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = [n,oc,oh,ow]
-        out_edge.dtype = in_edge.dtype
-        out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-        
-    
-    def infer_types(self):
-        pass
+        if self.network_precision == "float32" :
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.network_precision == "float16" :
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
     
     def infer_layouts(self):
         pass
@@ -101,12 +102,13 @@ class ActivationNode(Node):
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = in_edge.shape
-        out_edge.dtype = in_edge.dtype
-        out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
+        if self.network_precision == "float32" :
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.network_precision == "float16" :
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
-        
-    def infer_types(self):
-        pass
     
     def infer_layouts(self):
         pass
@@ -135,11 +137,12 @@ class ElementwiseNode(Node):
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = in_edge.shape
-        out_edge.dtype = in_edge.dtype
-        out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-    
-    def infer_types(self):
-        pass
+        if self.network_precision == "float32" :
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.network_precision == "float16" :
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
     
     def infer_layouts(self):
         pass
@@ -163,7 +166,7 @@ class PoolNode(Node):
             out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
         elif self.type == "MaxPool":
             out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
-                                           stride=self.params.strides,padding=self.params.pads[:2])
+                                        stride=self.params.strides,padding=self.params.pads[:2])
 
 
     def infer_shapes(self):
@@ -172,8 +175,12 @@ class PoolNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
             out_edge.shape = [n,c,1,1]
-            out_edge.dtype = in_edge.dtype
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
+            if self.network_precision == "float32":
+                out_edge.dtype = "float32"
+                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+            elif self.network_precision == "float16" :
+                out_edge.dtype = "float16"
+                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         elif self.type == "MaxPool":
             # floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
             padh = self.params.pads[0]
@@ -187,14 +194,14 @@ class PoolNode(Node):
             oh = math.floor((h + padh - ((kh-1)*dilationh + 1))/strideh + 1)
             ow = math.floor((w + padw - ((kw-1)*dilationw + 1))/stridew + 1)
             out_edge.shape = [n,c,oh,ow]
-            out_edge.dtype = in_edge.dtype
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
+            if self.network_precision == "float32":
+                out_edge.dtype = "float32"
+                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+            elif self.network_precision == "float16":
+                out_edge.dtype = "float16"
+                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
 
-        
-    def infer_types(self):
-        pass
-    
     def infer_layouts(self):
         pass
 
@@ -230,14 +237,14 @@ class GemmNode(Node):
             _, n = weights_edge.shape
             
         out_edge.shape = [m, n]
-        out_edge.dtype = in_edge.dtype
-        out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
+        if self.network_precision == "float32" :
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.network_precision == "float16" :
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
-        
-    
-    def infer_types(self):
-        pass
-    
+
     def infer_layouts(self):
         pass
 
@@ -261,15 +268,48 @@ class FlattenNode(Node):
         in_edge = self.all_edges[self.input_names[0]]
         n,c,h,w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1:
+        if self.params.axis == 1 and self.network_precision == "float32" :
             out_edge.shape = [n, c*h*w]
-            out_edge.dtype = in_edge.dtype
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float, requires_grad=False)
-
-    
-    def infer_types(self):
-        pass
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = [n, c*h*w]
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
     
     def infer_layouts(self):
         pass
 
+
+class CastNode(Node):
+    def __init__(self, in_dtype, out_dtype):
+        super().__init__()
+        self.params = CastParams()
+        self.type = "Cast"
+        self.in_dtype = in_dtype    #"float32"
+        self.out_dtype = out_dtype  #"float16"
+    
+    def run(self):
+        for name in self.input_names:
+            edge = self.all_edges[name]
+        for name in self.output_names:
+            edge = self.all_edges[name]
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.out_dtype == "float32":
+            out_edge.shape = in_edge.shape
+            out_edge.dtype = self.out_dtype
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.out_dtype == "float16":
+            out_edge.shape = in_edge.shape
+            out_edge.dtype = self.out_dtype
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+
+    
+    def infer_layouts(self):
+        pass
