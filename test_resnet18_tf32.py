@@ -11,6 +11,9 @@ from image_utils import *
 from cuda import cudart
 import time
 
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.backends.cudnn.benchmark = True
 
 if __name__ == "__main__":
     tinyinfer.get_gpu_info()
@@ -20,9 +23,9 @@ if __name__ == "__main__":
     onnx_name = "data/resnet18.onnx"
     
     config = Config()
-    config.log_verbose = True
-    config.fp32 = False
-    config.fp16 = True
+    config.log_verbose = False
+    config.fp32 = True
+    config.fp16 = False
     config.use_cpu = False
     config.use_gpu = True
     

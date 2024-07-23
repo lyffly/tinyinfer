@@ -39,7 +39,8 @@ python3 test_resnet18.py
 
 测试 Resnet18 FPS性能为：
 2024-7-15 FPS=79 (cpu)  
-2024-7-16 FPS=793 (use pytorch backend, FP32, 显卡为：3080Ti)，TensorRT 为1525  
+2024-7-16 FPS=793 (use pytorch backend, 实际TF32, 显卡为：3080Ti)，TensorRT 为1525  
+2024-7-23 FPS=812 (TF32), FPS=627 (FP32), FPS=735 (FP16), 未融合，使用pytorch  
 
 ####
 
