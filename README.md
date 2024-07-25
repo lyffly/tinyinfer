@@ -8,7 +8,7 @@
 - [x] 使用Python实现前端接口
 - [x] 支持Pytorch backend
 - [x] 支持FP32推理
-- [ ] 支持FP16推理
+- [x] 支持FP16推理
 - [ ] 支持INT8推理
 - [ ] 支持PPQ量化
 - [ ] 算子融合
