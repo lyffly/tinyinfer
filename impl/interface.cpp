@@ -14,5 +14,6 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(kernels, m) {
     m.def("elementwise", &elementwise);
+    m.def("activation", &activation);
 
 }

@@ -10,6 +10,8 @@ class ConvParams :
 class ActivationParams :
     def __init__(self):
         self.type = None
+        self.alpha = 1.0
+        self.beta = 1.0
 
 class ElementwiseParams :
     def __init__(self):

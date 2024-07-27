@@ -12,7 +12,7 @@
 - [ ] 支持INT8推理
 - [ ] 支持PPQ量化
 - [ ] 算子融合
-- [ ] 使用C++实现自定义CUDA算子
+- [x] 使用C++实现自定义CUDA算子
 - [x] 支持ONNX模型（CV模型）
 - [ ] 支持GGUF的模型（大模型）
 
@@ -41,6 +41,7 @@ python3 test_resnet18.py
 2024-7-15 FPS=79 (cpu)  
 2024-7-16 FPS=793 (use pytorch backend, 实际TF32, 显卡为：3080Ti)，TensorRT 为1525  
 2024-7-23 FPS=812 (TF32), FPS=627 (FP32), FPS=735 (FP16), 未融合，使用pytorch  
+2024-7-27 FPS=927 (FP16), 添加Relu和Add的CUDA实现
 
 ####
 

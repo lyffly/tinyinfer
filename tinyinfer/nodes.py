@@ -91,15 +91,16 @@ class ActivationNode(Node):
         self.type = "Activation"
     
     def run(self):
-        for name in self.input_names:
-            edge = self.all_edges[name]
-        for name in self.output_names:
-            edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        if self.type == "Relu":
+        
+        try:
+            import kernels
+            kernels.activation(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(), self.params.alpha,
+                                self.params.beta, in_edge.shape, out_edge.shape, self.network_precision, "nchw", self.type)
+        except:
             out_edge.tensor = torch.max(torch.tensor(0), in_edge.tensor)
-    
+        
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
         n,c,h,w = in_edge.shape
@@ -132,8 +133,13 @@ class ElementwiseNode(Node):
         in_edge0 = self.all_edges[self.input_names[0]]
         in_edge1 = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
-        if self.type == "Add":
-            out_edge.tensor = in_edge0.tensor + in_edge1.tensor
+        try:
+            import kernels
+            kernels.elementwise(in_edge0.tensor.data_ptr(), in_edge1.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+                                in_edge0.shape, in_edge1.shape, out_edge.shape, self.network_precision, "nchw", self.type)
+        except:
+            if self.type == "Add":
+                out_edge.tensor = in_edge0.tensor + in_edge1.tensor
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
