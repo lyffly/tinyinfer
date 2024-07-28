@@ -3,7 +3,7 @@ import math
 import torch
 import numpy as np
 import torch.nn.functional as F
-
+from cuda import cudart
 
 class Node:
     def __init__(self):
@@ -221,7 +221,7 @@ class GemmNode(Node):
         super().__init__()
         self.params = GemmParams()
         self.type = "Gemm"
-        self.workspace_size = 40960
+        self.workspace_size = 4096
         self.workspace_ptr = 0
     
     def run(self):
@@ -234,10 +234,14 @@ class GemmNode(Node):
         
         try: # use cuda cublas
             import kernels
-            from cuda import cudart
             if self.workspace_size : 
                 _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
-            kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
+            if bias_edge:
+                kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+                        self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
+                        self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape, out_edge.shape, self.network_precision)
+            else :
+                kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
                         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, [], out_edge.shape, self.network_precision)
             # print("****use cublas gemm\n")
@@ -247,6 +251,13 @@ class GemmNode(Node):
             else:
                 out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
             # print("****use pytorch gemm\n")
+    
+    def __del__(self):
+        if self.workspace_ptr:
+            try:
+                cudart.cudaFree(self.workspace_ptr)
+            except:
+                pass
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -272,7 +283,6 @@ class GemmNode(Node):
                 bias_edge.tensor = bias_edge.tensor.half()
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
 
-
     def infer_layouts(self):
         pass
 
@@ -284,10 +294,6 @@ class FlattenNode(Node):
         self.type = "Flatten"
     
     def run(self):
-        for name in self.input_names:
-            edge = self.all_edges[name]
-        for name in self.output_names:
-            edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
@@ -318,10 +324,6 @@ class CastNode(Node):
         self.out_dtype = out_dtype  #"float16"
     
     def run(self):
-        for name in self.input_names:
-            edge = self.all_edges[name]
-        for name in self.output_names:
-            edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         if self.out_dtype == "float32":

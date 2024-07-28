@@ -32,7 +32,8 @@ pip install dist/*.whl
 #### 使用Renset18测试
 
 ```shell
-python3 test_resnet18.py
+python3 test_resnet18_fp32.py
+python3 test_resnet18_fp16.py
 ```
 
 ##### 性能
@@ -41,9 +42,9 @@ python3 test_resnet18.py
 2024-7-15 FPS=79 (cpu)  
 2024-7-16 FPS=793 (use pytorch backend, 实际TF32, 显卡为：3080Ti)，TensorRT 为1525  
 2024-7-23 FPS=812 (TF32), FPS=627 (FP32), FPS=735 (FP16), 未融合，使用pytorch  
-2024-7-27 FPS=927 (FP16), 添加Relu和Add的CUDA实现
-2024-7-28 FPS=876 (FP16), 添加cublas gemm
+2024-7-27 FPS=927 (FP16), 添加Relu和Add的CUDA实现  
+2024-7-28 FPS=876 (FP16), 添加cublas gemm  
 
-####
+#### 愿景
 
 不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。

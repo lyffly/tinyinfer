@@ -35,15 +35,16 @@ if __name__ == "__main__":
     inputs = {"images" : img}
     network.prepare(inputs)
     # warup
-    results = network.run(inputs)
+    for i in range(5):
+        results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 
-    for i in range(10):
+    for i in range(20):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     end = time.time()
-    fps = 10.0/(end - start)
+    fps = 20.0/(end - start)
     out_tensor = results["output"].numpy()
     out_tensor = softmax(out_tensor, axis=1)
     print("out shape:", out_tensor.shape)

@@ -35,7 +35,8 @@ if __name__ == "__main__":
     inputs = {"images" : img}
     network.prepare(inputs)
     # warup
-    results = network.run(inputs)
+    for i in range(5):
+        results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 

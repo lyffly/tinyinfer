@@ -14,6 +14,22 @@
 #include "../helper/helper.h"
 
 
+// m*n + m*n = m*n 
+// or m*n + 1*n = m*n 
+template<typename T>
+__global__ void add_bias_fp(T *inout, T *bias, int m, int n, bool is_boardcast, int length) {
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    auto inout_ptr = reinterpret_cast<T*>(inout);
+    auto bias_ptr = reinterpret_cast<T*>(bias);
+    if ((index < length) and is_boardcast) {
+        int index_bias = index % n ;
+        inout_ptr[index] = inout_ptr[index] + bias_ptr[index_bias];
+    } else if((index < length) and (!is_boardcast)) {
+        inout_ptr[index] = inout_ptr[index] + bias_ptr[index];
+    }
+}
+
+
 void cublas_gemm_fp16_v1(cublasHandle_t handle, bool trsA, bool trsB,
                         int m, int n, int k,
                         const float *alpha,
@@ -64,9 +80,6 @@ void cublas_gemm_fp32_v1(cublasHandle_t handle, bool trsA, bool trsB,
                         void* B,
                         const float *beta,
                         void* C) {
-    // half h_alpha = __float2half(*alpha);
-    // half h_beta = __float2half(*beta);
-    // half h_beta = __float2half(0.0f);
     cublasOperation_t transa_ = CUBLAS_OP_N;
     cublasOperation_t transb_ = CUBLAS_OP_N;
     int m_ = n; //1000
@@ -75,6 +88,7 @@ void cublas_gemm_fp32_v1(cublasHandle_t handle, bool trsA, bool trsB,
     int lda_ = n; // 1000 col major
     int ldb_ = k; // 512 
     int ldc_ = n; // 1000 
+    float beta0 = 0.0f;
     if (trsB) {
         transa_ = CUBLAS_OP_T;
         lda_ = k;
@@ -91,7 +105,7 @@ void cublas_gemm_fp32_v1(cublasHandle_t handle, bool trsA, bool trsB,
                         alpha,
                         (float*)B, lda_,
                         (float*)A, ldb_,
-                        beta,
+                        &beta0,
                         (float*)C, ldc_));
     // add bias
 }
@@ -101,7 +115,7 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
                 int64_t workspace_ptr, float alpha, float beta, bool transA, bool transB, 
                 std::vector<int> in_shape, std::vector<int> weight_shape, std::vector<int> bias_shape,
                 std::vector<int> out_shape, std::string dtype) {
-    
+    // 2d tensor only, batch gemm todo
     // A=N ; B=N or T
     int m = in_shape.at(0);
     int k = in_shape.at(1);
@@ -127,6 +141,14 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
                         (void*)weight_ptr, 
                         &beta,
                         (void*)out_ptr);
+        bool is_boardcast = bias_shape.size()==1? true : false;
+        int block_size = 512;
+        int length = 1;
+        for (auto& shape : out_shape) {
+            length *= shape;
+        }
+        int grid_size = (length + block_size - 1) / block_size;
+        add_bias_fp<float><<<grid_size, block_size>>>((float*)out_ptr, (float*)bias_ptr,  m, n, is_boardcast, length);
     } else if (dtype == "float16") {
         cublas_gemm_fp16_v1(handle, transA, transB,
                         m, n, k,
@@ -135,6 +157,16 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
                         (void*)weight_ptr, 
                         &beta,
                         (void*)out_ptr);
+        bool is_boardcast = bias_shape.size()==1? true : false;
+        int block_size = 512;
+        int length = 1;
+        for (auto& shape : out_shape) {
+            length *= shape;
+        }
+        int grid_size = (length + block_size - 1) / block_size;
+        add_bias_fp<half><<<grid_size, block_size>>>((half*)out_ptr, (half*)bias_ptr,  m, n, is_boardcast, length);
+    } else {
+        printf("Gemm not support data type %s !!! \n", dtype.c_str());
     }
     
     return true;

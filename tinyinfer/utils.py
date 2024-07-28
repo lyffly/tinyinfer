@@ -85,8 +85,10 @@ def get_gpu_info():
     else : 
         for i in range(device_num):
             _, prop = cudart.cudaGetDeviceProperties(i)
+            print("****"*20)
             print("device index: ", i)
             print("    name: ", str(prop.name))
             print("    total mem (Gb): ", prop.totalGlobalMem/1024/1024/1024)
+            print("****"*20)
     
     return device_num
