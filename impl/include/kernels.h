@@ -65,3 +65,6 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
                 std::vector<int> out_shape, std::string dtype);
     
 
+bool cast_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape, 
+                    std::string layout, std::string in_dtype, std::string out_dtype);
+

@@ -28,6 +28,7 @@ class PoolParams :
 class FlattenParams :
     def __init__(self):
         self.axis = None
+        self.is_inplace = False
 
 class GemmParams :
     def __init__(self):

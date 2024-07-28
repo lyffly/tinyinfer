@@ -16,5 +16,6 @@ PYBIND11_MODULE(kernels, m) {
     m.def("elementwise", &elementwise_backend);
     m.def("activation", &activation_backend);
     m.def("gemm", &gemm_backend);
+    m.def("cast", &cast_backend);
 
 }

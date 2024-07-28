@@ -79,6 +79,8 @@ class ConvNode(Node):
             if bias_edge:
                 bias_edge.tensor = bias_edge.tensor.half()
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] conv infer shape not support!!")
     
     def infer_layouts(self):
         pass
@@ -115,7 +117,8 @@ class ActivationNode(Node):
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
-
+        else :
+            print("[Error] activation infer shape not support!!")
     
     def infer_layouts(self):
         pass
@@ -153,6 +156,8 @@ class ElementwiseNode(Node):
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] elementwise infer shape not support!!")
     
     def infer_layouts(self):
         pass
@@ -191,6 +196,8 @@ class PoolNode(Node):
             elif self.network_precision == "float16" :
                 out_edge.dtype = "float16"
                 out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+            else :
+                print("[Error] avgpool infer shape not support!!")
         elif self.type == "MaxPool":
             # floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
             padh = self.params.pads[0]
@@ -210,6 +217,8 @@ class PoolNode(Node):
             elif self.network_precision == "float16":
                 out_edge.dtype = "float16"
                 out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+            else :
+                print("[Error] maxpool infer shape not support!!")
 
 
     def infer_layouts(self):
@@ -282,6 +291,8 @@ class GemmNode(Node):
             if bias_edge:
                 bias_edge.tensor = bias_edge.tensor.half()
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] gemm infer shape not support!!")
 
     def infer_layouts(self):
         pass
@@ -310,6 +321,8 @@ class FlattenNode(Node):
             out_edge.shape = [n, c*h*w]
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] flatten infer shape not support!!")
     
     def infer_layouts(self):
         pass
@@ -326,10 +339,18 @@ class CastNode(Node):
     def run(self):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        if self.out_dtype == "float32":
-            out_edge.tensor = in_edge.tensor.float()
-        elif self.out_dtype == "float16":
-            out_edge.tensor = in_edge.tensor.half()
+        
+        try: # use cuda cublas
+            import kernels
+            kernels.cast(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+                        in_edge.shape, out_edge.shape, "nchw", self.in_dtype, self.out_dtype)
+            #print("****use cuda cast\n")
+        except:
+            if self.out_dtype == "float32":
+                out_edge.tensor = in_edge.tensor.float()
+            elif self.out_dtype == "float16":
+                out_edge.tensor = in_edge.tensor.half()
+            #print("****use pytorch cast\n")
 
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -342,7 +363,8 @@ class CastNode(Node):
         elif self.out_dtype == "float16":
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] cast infer shape not support!!")
 
-    
     def infer_layouts(self):
         pass
