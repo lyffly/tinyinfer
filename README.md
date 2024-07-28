@@ -2,7 +2,9 @@
 
 #### 介绍
 
-一个推理框架，目标是最精简的技术实现，开发中。
+一个推理框架，目标是最精简的技术实现，开发中。  
+更新地址1: https://github.com/lyffly/tinyinfer  
+更新地址2: https://gitee.com/yunfeiliu/tinyinfer  
 长期计划如下，现在还比较早期，晚上和周末才有时间更新
 
 - [x] 使用Python实现前端接口
