@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 #include <functional>
-
+#include "cublas_v2.h"
 #include "cublasLt.h"
 #include "cuda_fp8.h"
 #include "cuda_runtime.h"

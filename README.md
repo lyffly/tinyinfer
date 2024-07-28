@@ -13,6 +13,9 @@
 - [ ] 支持PPQ量化
 - [ ] 算子融合
 - [x] 使用C++实现自定义CUDA算子
+- [x] 使用C++实现tensor类
+- [ ] cutlass实现gemm
+- [ ] cutlass实现conv2d
 - [x] 支持ONNX模型（CV模型）
 - [ ] 支持GGUF的模型（大模型）
 
@@ -41,6 +44,7 @@ python3 test_resnet18_fp16.py
 测试 Resnet18 FPS性能为：
 2024-7-15 FPS=79 (cpu)  
 2024-7-16 FPS=793 (use pytorch backend, 实际TF32, 显卡为：3080Ti)，TensorRT 为1525  
+2024-7-23 FPS=1515 (TF32), FPS=1529 (FP32), FPS=4620 (FP16) 使用TensorRT  
 2024-7-23 FPS=812 (TF32), FPS=627 (FP32), FPS=735 (FP16), 未融合，使用pytorch  
 2024-7-27 FPS=927 (FP16), 添加Relu和Add的CUDA实现  
 2024-7-28 FPS=876 (FP16), 添加cublas gemm  
