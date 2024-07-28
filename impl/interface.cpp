@@ -13,7 +13,8 @@ namespace py = pybind11;
 
 
 PYBIND11_MODULE(kernels, m) {
-    m.def("elementwise", &elementwise);
-    m.def("activation", &activation);
+    m.def("elementwise", &elementwise_backend);
+    m.def("activation", &activation_backend);
+    m.def("gemm", &gemm_backend);
 
 }

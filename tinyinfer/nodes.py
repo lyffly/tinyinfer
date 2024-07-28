@@ -96,9 +96,11 @@ class ActivationNode(Node):
         
         try:
             import kernels
+            #print("****use cuda activation")
             kernels.activation(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(), self.params.alpha,
                                 self.params.beta, in_edge.shape, out_edge.shape, self.network_precision, "nchw", self.type)
         except:
+            #print("****use pytorch activation")
             out_edge.tensor = torch.max(torch.tensor(0), in_edge.tensor)
         
     def infer_shapes(self):
@@ -126,18 +128,16 @@ class ElementwiseNode(Node):
         self.type = "Elementwise"
     
     def run(self):
-        for name in self.input_names:
-            edge = self.all_edges[name]
-        for name in self.output_names:
-            edge = self.all_edges[name]
         in_edge0 = self.all_edges[self.input_names[0]]
         in_edge1 = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
         try:
             import kernels
+            #print("****use cuda elementwise")
             kernels.elementwise(in_edge0.tensor.data_ptr(), in_edge1.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                                 in_edge0.shape, in_edge1.shape, out_edge.shape, self.network_precision, "nchw", self.type)
         except:
+            #print("****use pytorch elementwise")
             if self.type == "Add":
                 out_edge.tensor = in_edge0.tensor + in_edge1.tensor
     
@@ -221,19 +221,32 @@ class GemmNode(Node):
         super().__init__()
         self.params = GemmParams()
         self.type = "Gemm"
+        self.workspace_size = 40960
+        self.workspace_ptr = 0
     
     def run(self):
-        for name in self.input_names:
-            edge = self.all_edges[name]
-        for name in self.output_names:
-            edge = self.all_edges[name]
         in_edge = self.all_edges[self.input_names[0]]
         w_edge = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.transB:
-            out_edge.tensor = torch.matmul(in_edge.tensor, w_edge.tensor.T)
-        else:
-            out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
+        bias_edge = None
+        if len(self.input_names) > 2:
+            bias_edge = self.all_edges[self.input_names[2]]
+        
+        try: # use cuda cublas
+            import kernels
+            from cuda import cudart
+            if self.workspace_size : 
+                _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
+            kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
+                        self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
+                        self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, [], out_edge.shape, self.network_precision)
+            # print("****use cublas gemm\n")
+        except: # use torch
+            if self.params.transB:
+                out_edge.tensor = torch.matmul(in_edge.tensor, w_edge.tensor.T)
+            else:
+                out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
+            # print("****use pytorch gemm\n")
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -247,7 +260,7 @@ class GemmNode(Node):
             n, _ = weights_edge.shape
         else :
             _, n = weights_edge.shape
-            
+        
         out_edge.shape = [m, n]
         if self.network_precision == "float32" :
             out_edge.dtype = "float32"

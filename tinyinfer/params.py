@@ -33,7 +33,8 @@ class GemmParams :
     def __init__(self):
         self.alpha = None
         self.beta = None
-        self.transB = None
+        self.transA = 0
+        self.transB = 0
 
 class ResizeParams :
     def __init__(self):
