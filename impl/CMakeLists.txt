@@ -6,7 +6,7 @@ include_directories(${CUDA_INCLUDE_DIR})
 file(GLOB SRCS_IMPL ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cu ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp)
 message(${SRCS_IMPL})
 add_library(cuda_kernels STATIC ${SRCS_IMPL})
-target_link_libraries(cuda_kernels PRIVATE cuda cudart cublasLt cublas)
+target_link_libraries(cuda_kernels PRIVATE cuda cudart cublasLt cublas cudnn)
 set_target_properties(cuda_kernels PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
     CUDA_RESOLVE_DEVICE_SYMBOLS ON

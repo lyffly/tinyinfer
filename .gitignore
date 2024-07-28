@@ -18,7 +18,7 @@ __pycache__/
 tinyinfer/__pycache__
 tinyinfer/__pycache__/
 tinyinfer/__pycache__/*.pyc
-
+*.nsys-rep
 # Compiled Object files
 *.slo
 *.lo

@@ -86,8 +86,8 @@ ActivationOpType string_to_activation_type(std::string op_type) {
 
 bool activation_backend(int64_t in_ptr, int64_t out_ptr, float alpha, float beta,
                 std::vector<int> in_shape, std::vector<int> out_shape, std::string dtype, 
-                std::string layout, std::string optype) {
-
+                std::string layout, std::string optype, int64_t pstream) {
+    cudaStream_t stream = (cudaStream_t)pstream;
     int block_size = 512;
     int length = 1;
     for (auto& shape : out_shape) {
@@ -99,17 +99,17 @@ bool activation_backend(int64_t in_ptr, int64_t out_ptr, float alpha, float beta
     
 
     if (optype == "Relu" && dtype == "float32") {
-        activation_fp_cuda<Activation_Relu ,float><<<grid_size, block_size>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_Relu ,float><<<grid_size, block_size,0, stream>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
     } else if (optype == "Relu" && dtype == "float16"){
-        activation_fp_cuda<Activation_Relu, half><<<grid_size, block_size>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_Relu, half><<<grid_size, block_size,0, stream>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
     } else if (optype == "LeakyRelu" && dtype == "float32") {
-        activation_fp_cuda<Activation_LeakyRelu ,float><<<grid_size, block_size>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_LeakyRelu ,float><<<grid_size, block_size,0, stream>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
     } else if (optype == "LeakyRelu" && dtype == "float16"){
-        activation_fp_cuda<Activation_LeakyRelu, half><<<grid_size, block_size>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_LeakyRelu, half><<<grid_size, block_size,0, stream>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
     } else if (optype == "Sigmoid" && dtype == "float32") {
-        activation_fp_cuda<Activation_Sigmoid ,float><<<grid_size, block_size>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_Sigmoid ,float><<<grid_size, block_size,0, stream>>>((float*)in_ptr,(float*)out_ptr, (int)length, alpha, beta);
     } else if (optype == "Sigmoid" && dtype == "float16"){
-        activation_fp_cuda<Activation_Sigmoid, half><<<grid_size, block_size>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
+        activation_fp_cuda<Activation_Sigmoid, half><<<grid_size, block_size,0, stream>>>((half*)in_ptr,(half*)out_ptr, (int)length, alpha, beta);
     }
     
     return true;

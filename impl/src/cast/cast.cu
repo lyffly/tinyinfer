@@ -41,7 +41,8 @@ __global__ void cast_fp_cuda(T1 *in, T2 *out, int length) {
 
 
 bool cast_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape, 
-                    std::string layout, std::string in_dtype, std::string out_dtype) {
+                    std::string layout, std::string in_dtype, std::string out_dtype, int64_t pstream) {
+    cudaStream_t stream = (cudaStream_t)pstream;
     int block_size = 512;
     int length = 1;
     for (auto& shape : out_shape) {
@@ -51,10 +52,10 @@ bool cast_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, st
     int grid_size = (length + block_size - 1) / block_size;
 
     if (in_dtype == "float16" and out_dtype == "float32") {
-        cast_fp_cuda<half, float><<<grid_size, block_size>>>((half*)in_ptr, (float*)out_ptr,
+        cast_fp_cuda<half, float><<<grid_size, block_size,0, stream>>>((half*)in_ptr, (float*)out_ptr,
                                             (int)length);
     } else if (in_dtype == "float32" and out_dtype == "float16"){
-        cast_fp_cuda<float, half><<<grid_size, block_size>>>((float*)in_ptr, (__half*)out_ptr,
+        cast_fp_cuda<float, half><<<grid_size, block_size,0, stream>>>((float*)in_ptr, (__half*)out_ptr,
                                             (int)length);
     } 
     

@@ -14,8 +14,11 @@ class Network():
         self.config = None
         self.nodes_num = 0
         self.edges_num = 0
+        self.stream = None
     
     def prepare(self, ins = {}):
+        from cuda import cudart
+        _, self.stream = cudart.cudaStreamCreate()
         self.bind_all_edges()
         for key in ins.keys():
             in_tensor = ins[key]
@@ -96,7 +99,7 @@ class Network():
         for nodename in self.run_orders:
             if self.config.log_verbose:
                 print("[run] node name: ", nodename)
-            self.nodes[nodename].run()
+            self.nodes[nodename].run(self.stream)
         # 获取输出，输出数转到cpu
         outs = {}
         for name in self.output_names:

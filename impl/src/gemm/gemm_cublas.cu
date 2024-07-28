@@ -114,7 +114,8 @@ void cublas_gemm_fp32_v1(cublasHandle_t handle, bool trsA, bool trsB,
 bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr, int64_t workspace_size, 
                 int64_t workspace_ptr, float alpha, float beta, bool transA, bool transB, 
                 std::vector<int> in_shape, std::vector<int> weight_shape, std::vector<int> bias_shape,
-                std::vector<int> out_shape, std::string dtype) {
+                std::vector<int> out_shape, std::string dtype, int64_t pstream) {
+    cudaStream_t stream = (cudaStream_t)pstream;
     // 2d tensor only, batch gemm todo
     // A=N ; B=N or T
     int m = in_shape.at(0);
@@ -131,6 +132,7 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
 
     cublasHandle_t handle;
     cublasCreate_v2(&handle);
+    cublasSetStream(handle,stream);
     cublasSetMathMode(handle, CUBLAS_DEFAULT_MATH);
     if (dtype == "float32") {
         cublasSetMathMode(handle, CUBLAS_TF32_TENSOR_OP_MATH);
@@ -148,7 +150,7 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
             length *= shape;
         }
         int grid_size = (length + block_size - 1) / block_size;
-        add_bias_fp<float><<<grid_size, block_size>>>((float*)out_ptr, (float*)bias_ptr,  m, n, is_boardcast, length);
+        add_bias_fp<float><<<grid_size, block_size,0, stream>>>((float*)out_ptr, (float*)bias_ptr,  m, n, is_boardcast, length);
     } else if (dtype == "float16") {
         cublas_gemm_fp16_v1(handle, transA, transB,
                         m, n, k,
@@ -164,7 +166,7 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
             length *= shape;
         }
         int grid_size = (length + block_size - 1) / block_size;
-        add_bias_fp<half><<<grid_size, block_size>>>((half*)out_ptr, (half*)bias_ptr,  m, n, is_boardcast, length);
+        add_bias_fp<half><<<grid_size, block_size,0, stream>>>((half*)out_ptr, (half*)bias_ptr,  m, n, is_boardcast, length);
     } else {
         printf("Gemm not support data type %s !!! \n", dtype.c_str());
     }
