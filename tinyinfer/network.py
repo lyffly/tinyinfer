@@ -76,21 +76,21 @@ class Network():
                 print("     -> ", out_edge.shape, out_edge.dtype)
         # move edge data to gpu
         for key in self.edges.keys():
-            if self.edges[key].type == "input":
-                pass
-            elif self.edges[key].type == "output":
-                pass
+            if self.edges[key].type == "input" and self.config.use_gpu:
+                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+            elif self.edges[key].type == "output" and self.config.use_gpu:
+                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
             elif self.config.use_gpu:
                 self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
 
 
     def run(self, ins = {}):
         # 把输入输出数据转到gpu
-        for key in self.edges.keys():
-            if self.edges[key].type == "input" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
-            elif self.edges[key].type == "output" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+        # for key in self.edges.keys():
+        #     if self.edges[key].type == "input" and self.config.use_gpu:
+        #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+        #     elif self.edges[key].type == "output" and self.config.use_gpu:
+        #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
 
         # 进行每一个node的推理
         for nodename in self.run_orders:
@@ -100,10 +100,11 @@ class Network():
         # 获取输出，输出数转到cpu
         outs = {}
         for name in self.output_names:
-            out_tensor = self.edges[name].tensor
-            if self.config.use_gpu:
-                out_tensor = out_tensor.cpu()
-            outs[name] = out_tensor
+            # out_tensor = self.edges[name].tensor
+            # if self.config.use_gpu:
+            #     out_tensor = out_tensor.cpu()
+            # outs[name] = out_tensor
+            outs[name] = self.edges[name].tensor
                 
         if self.config.log_verbose:
             print("[run] network run end ! \n", "*" * 80)

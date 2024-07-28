@@ -45,7 +45,7 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     end = time.time()
     fps = 20.0/(end - start)
-    out_tensor = results["output"].numpy()
+    out_tensor = results["output"].cpu().numpy()
     out_tensor = softmax(out_tensor, axis=1)
     print("out shape:", out_tensor.shape)
     print("detect confidence:", np.max(out_tensor[0]))
