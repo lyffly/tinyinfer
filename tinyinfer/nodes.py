@@ -61,7 +61,7 @@ class ConvNode(Node):
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
                                 self.network_precision, "nchw")
                 assert self.algo >= 0
-                print("conv algo : ", self.algo)
+                # print("conv algo : ", self.algo)
                 self.workspace_size = kernels.get_conv2d_workspace_size(
                                 self.params.kernel_shape, self.params.pads, self.params.strides,
                                 self.params.dilations, self.params.group, 
@@ -69,7 +69,7 @@ class ConvNode(Node):
                                 self.network_precision, "nchw", self.algo)
                 assert self.workspace_size >= 0
                 _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
-                print("conv workspace size : ", self.workspace_size)
+                # print("conv workspace size : ", self.workspace_size)
             
             
             kernels.conv2d(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 

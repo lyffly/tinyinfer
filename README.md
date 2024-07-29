@@ -16,6 +16,8 @@
 - [ ] 算子融合
 - [x] 使用C++实现自定义CUDA算子
 - [x] 使用C++实现tensor类
+- [x] 使用cublas的gemm
+- [x] 使用cudnn的conv2d
 - [ ] cutlass实现gemm
 - [ ] cutlass实现conv2d
 - [x] 支持ONNX模型（CV模型）
