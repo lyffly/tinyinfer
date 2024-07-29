@@ -9,6 +9,8 @@
 #include "cuda_fp8.h"
 #include "cuda_runtime.h"
 
+
+
 inline void checkCudaStatus(cudaError_t status) {
     if (status != cudaSuccess) {
         printf("cuda API failed with status %d: %s\n", status, cudaGetErrorString(status));

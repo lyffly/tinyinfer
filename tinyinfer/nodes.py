@@ -70,8 +70,7 @@ class ConvNode(Node):
                 assert self.workspace_size >= 0
                 _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
                 # print("conv workspace size : ", self.workspace_size)
-            
-            
+
             kernels.conv2d(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 
                             b_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(), 
                             self.workspace_size, self.workspace_ptr, self.algo,
@@ -81,9 +80,11 @@ class ConvNode(Node):
                             self.network_precision, "nchw", stream)
             # print(out_edge.tensor[0][0][0][:10])
         except:
+        # if True:
             # print("****use pytorch conv2d")
             out_edge.tensor = F.conv2d(in_edge.tensor, w_edge.tensor, b_edge.tensor, stride=self.params.strides,
                     padding=self.params.pads[:2], groups=self.params.group)
+            # print(out_edge.tensor[0][0][0][:10])
     
     
     def infer_shapes(self):

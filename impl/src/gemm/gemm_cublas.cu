@@ -29,6 +29,7 @@ __global__ void add_bias_fp(T *inout, T *bias, int m, int n, bool is_boardcast, 
     }
 }
 
+static cublasHandle_t cublas_handle;
 
 void cublas_gemm_fp16_v1(cublasHandle_t handle, bool trsA, bool trsB,
                         int m, int n, int k,
@@ -129,14 +130,12 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
     }
     // printf("alpha %f beta %f \n",alpha, beta);
     // printf("m %d k %d n  %d \n",m,k,n);
-
-    cublasHandle_t handle;
-    cublasCreate_v2(&handle);
-    cublasSetStream(handle,stream);
-    cublasSetMathMode(handle, CUBLAS_DEFAULT_MATH);
+    if (!cublas_handle) { cublasCreate_v2(&cublas_handle);}
+    cublasSetStream(cublas_handle,stream);
+    cublasSetMathMode(cublas_handle, CUBLAS_DEFAULT_MATH);
     if (dtype == "float32") {
-        cublasSetMathMode(handle, CUBLAS_TF32_TENSOR_OP_MATH);
-        cublas_gemm_fp32_v1(handle, transA, transB,
+        cublasSetMathMode(cublas_handle, CUBLAS_TF32_TENSOR_OP_MATH);
+        cublas_gemm_fp32_v1(cublas_handle, transA, transB,
                         m, n, k,
                         &alpha,
                         (void*)in_ptr, 
@@ -152,7 +151,7 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
         int grid_size = (length + block_size - 1) / block_size;
         add_bias_fp<float><<<grid_size, block_size,0, stream>>>((float*)out_ptr, (float*)bias_ptr,  m, n, is_boardcast, length);
     } else if (dtype == "float16") {
-        cublas_gemm_fp16_v1(handle, transA, transB,
+        cublas_gemm_fp16_v1(cublas_handle, transA, transB,
                         m, n, k,
                         &alpha,
                         (void*)in_ptr, 
