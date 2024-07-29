@@ -17,6 +17,10 @@ PYBIND11_MODULE(kernels, m) {
     m.def("activation", &activation_backend);
     m.def("gemm", &gemm_backend);
     m.def("cast", &cast_backend);
+    m.def("conv2d", &conv2d_backend);
+    m.def("get_conv2d_algo", &get_conv2d_algo);
+    m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);
+    
 
     py::enum_<DataType>(m, "DataType")
         .value("INT8", DataType::INT8)

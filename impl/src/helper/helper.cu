@@ -36,7 +36,7 @@ bool YTensor::CPU() {
 }
 
 
-bool YTensor::SetDataPtr(int64_t ptr) {
+void YTensor::SetDataPtr(int64_t ptr) {
 
 }
 
@@ -44,7 +44,7 @@ int64_t YTensor::GetDataPtr() {
     return (int64_t)data;
 }
 
-bool YTensor::SetShape(Dims dims) {
+void YTensor::SetShape(Dims dims) {
 
 }
 

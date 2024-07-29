@@ -40,14 +40,50 @@ class ConvNode(Node):
         self.type = "Conv"
         self.inc = 0
         self.outc = 0
+        self.workspace_size = -1
+        self.workspace_ptr = 0
+        self.algo = -1
 
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         w_edge = self.all_edges[self.input_names[1]]
-        b_edge = self.all_edges[self.input_names[2]]
+        b_edge = None
+        if len(self.input_names) > 2:
+            b_edge = self.all_edges[self.input_names[2]]
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.tensor = F.conv2d(in_edge.tensor, w_edge.tensor, b_edge.tensor, stride=self.params.strides,
-                padding=self.params.pads[:2], groups=self.params.group)
+        try:
+            # print("\n****use cudnn conv")
+            import kernels
+            if self.algo < 0:
+                self.algo = kernels.get_conv2d_algo(
+                                self.params.kernel_shape, self.params.pads, self.params.strides,
+                                self.params.dilations, self.params.group, 
+                                in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
+                                self.network_precision, "nchw")
+                assert self.algo >= 0
+                print("conv algo : ", self.algo)
+                self.workspace_size = kernels.get_conv2d_workspace_size(
+                                self.params.kernel_shape, self.params.pads, self.params.strides,
+                                self.params.dilations, self.params.group, 
+                                in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
+                                self.network_precision, "nchw", self.algo)
+                assert self.workspace_size >= 0
+                _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
+                print("conv workspace size : ", self.workspace_size)
+            
+            
+            kernels.conv2d(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 
+                            b_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(), 
+                            self.workspace_size, self.workspace_ptr, self.algo,
+                            self.params.kernel_shape, self.params.pads, self.params.strides,
+                            self.params.dilations, self.params.group, 
+                            in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
+                            self.network_precision, "nchw", stream)
+            # print(out_edge.tensor[0][0][0][:10])
+        except:
+            # print("****use pytorch conv2d")
+            out_edge.tensor = F.conv2d(in_edge.tensor, w_edge.tensor, b_edge.tensor, stride=self.params.strides,
+                    padding=self.params.pads[:2], groups=self.params.group)
     
     
     def infer_shapes(self):

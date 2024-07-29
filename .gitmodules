@@ -4,3 +4,9 @@
 [submodule "3rd/cutlass"]
 	path = 3rd/cutlass
 	url = https://gitee.com/yunfeiliu/cutlass
+[submodule "3rd/ppl.kernel.cuda"]
+	path = 3rd/ppl.kernel.cuda
+	url = https://gitee.com/yunfeiliu/ppl.kernel.cuda
+[submodule "3rd/MNN"]
+	path = 3rd/MNN
+	url = https://gitee.com/yunfeiliu/MNN
