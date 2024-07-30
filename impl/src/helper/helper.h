@@ -1,15 +1,13 @@
 #pragma once
 
 #include <cstdio>
+#include <functional>
 #include <stdexcept>
 #include <vector>
-#include <functional>
-#include "cublas_v2.h"
 #include "cublasLt.h"
+#include "cublas_v2.h"
 #include "cuda_fp8.h"
 #include "cuda_runtime.h"
-
-
 
 inline void checkCudaStatus(cudaError_t status) {
     if (status != cudaSuccess) {

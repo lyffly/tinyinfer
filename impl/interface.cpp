@@ -1,16 +1,14 @@
-#include "include/kernels.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "stdio.h"
-#include "math.h"
-#include <iostream>
 #include <cstdint>
-#include <vector>
+#include <iostream>
 #include <string>
-
+#include <vector>
+#include "include/kernels.h"
+#include "math.h"
+#include "stdio.h"
 
 namespace py = pybind11;
-
 
 PYBIND11_MODULE(kernels, m) {
     m.def("elementwise", &elementwise_backend);
@@ -20,7 +18,6 @@ PYBIND11_MODULE(kernels, m) {
     m.def("conv2d", &conv2d_backend);
     m.def("get_conv2d_algo", &get_conv2d_algo);
     m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);
-    
 
     py::enum_<DataType>(m, "DataType")
         .value("INT8", DataType::INT8)
@@ -42,10 +39,8 @@ PYBIND11_MODULE(kernels, m) {
         .def_readwrite("nbDims", &Dims::nbDims)
         .def_readwrite("d", &Dims::d);
 
-
     py::class_<YTensor>(m, "YTensor")
         .def(py::init())
-        .def_property ("data_ptr", &YTensor::GetDataPtr, &YTensor::SetDataPtr)
+        .def_property("data_ptr", &YTensor::GetDataPtr, &YTensor::SetDataPtr)
         .def_property("shape", &YTensor::GetShape, &YTensor::SetShape);
-
 }
