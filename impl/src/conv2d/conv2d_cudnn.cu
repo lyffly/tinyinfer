@@ -17,13 +17,26 @@
 
 static cudnnHandle_t cudnn_handle;
 
-void setup_descriptor_nchw(
-    std::vector<int>& kernels, std::vector<int>& paddings, std::vector<int>& strides,
-    std::vector<int>& dilations, int group, std::vector<int>& in_shape,
-    std::vector<int>& weight_shape, std::vector<int>& bias_shape, std::vector<int>& out_shape,
-    std::string dtype, std::string layout, cudnnTensorDescriptor_t& input_desc,
-    cudnnTensorDescriptor_t& output_desc, cudnnFilterDescriptor_t& kernel_desc,
-    cudnnConvolutionDescriptor_t& conv_desc, cudnnTensorDescriptor_t& bias_desc) {
+void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
+                      std::vector<int>& strides, std::vector<int>& dilations, int group,
+                      std::vector<int>& in_shape, std::vector<int>& weight_shape,
+                      std::vector<int>& bias_shape, std::vector<int>& out_shape, std::string dtype,
+                      std::string layout, cudnnTensorDescriptor_t& input_desc,
+                      cudnnTensorDescriptor_t& output_desc, cudnnFilterDescriptor_t& kernel_desc,
+                      cudnnConvolutionDescriptor_t& conv_desc, cudnnTensorDescriptor_t& bias_desc) {
+    cudnnDataType_t infer_data_type;
+    cudnnTensorFormat_t infer_layout;
+    if (layout == "nchw") {
+        infer_layout = CUDNN_TENSOR_NCHW;
+    } else if (layout == "nhwc") {
+        infer_layout = CUDNN_TENSOR_NHWC;
+    }
+    if (dtype == "float16") {
+        infer_data_type = CUDNN_DATA_HALF;
+    } else if (dtype == "float32") {
+        infer_data_type = CUDNN_DATA_FLOAT;
+    }
+
     int batch = in_shape.at(0);
     int inc = in_shape.at(1);
     int inh = in_shape.at(2);
@@ -36,54 +49,29 @@ void setup_descriptor_nchw(
     // printf("output shape : %d %d %d %d \n", batch, outc, outh, outw);
 
     cudnnCreateTensorDescriptor(&input_desc);
-    if (dtype == "float16") {
-        cudnnSetTensor4dDescriptor(input_desc, CUDNN_TENSOR_NCHW, CUDNN_DATA_HALF, batch, inc, inh,
-                                   inw);
-    } else if (dtype == "float32") {
-        cudnnSetTensor4dDescriptor(input_desc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, batch, inc, inh,
-                                   inw);
-    }
+    cudnnSetTensor4dDescriptor(input_desc, infer_layout, infer_data_type, batch, inc, inh, inw);
 
     cudnnCreateTensorDescriptor(&output_desc);
-    if (dtype == "float16") {
-        cudnnSetTensor4dDescriptor(output_desc, CUDNN_TENSOR_NCHW, CUDNN_DATA_HALF, batch, outc,
-                                   outh, outw);
-    } else if (dtype == "float32") {
-        cudnnSetTensor4dDescriptor(output_desc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, batch, outc,
-                                   outh, outw);
-    }
+    cudnnSetTensor4dDescriptor(output_desc, infer_layout, infer_data_type, batch, outc, outh, outw);
 
     cudnnCreateFilterDescriptor(&kernel_desc);
-    if (dtype == "float16") {
-        cudnnSetFilter4dDescriptor(kernel_desc, CUDNN_DATA_HALF, CUDNN_TENSOR_NCHW, outc, inc,
-                                   kernels.at(0), kernels.at(1));
-    } else if (dtype == "float32") {
-        cudnnSetFilter4dDescriptor(kernel_desc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, outc, inc,
-                                   kernels.at(0), kernels.at(1));
-    }
+    cudnnSetFilter4dDescriptor(kernel_desc, infer_data_type, infer_layout, outc, inc, kernels.at(0),
+                               kernels.at(1));
+
     // printf("kernel shape : %d %d %d %d \n", outc, inc, kernels.at(0), kernels.at(1));
 
     cudnnCreateTensorDescriptor(&bias_desc);
-    if (dtype == "float16") {
-        cudnnSetTensor4dDescriptor(bias_desc,
-                                   /*format=*/CUDNN_TENSOR_NCHW,
-                                   /*dataType=*/CUDNN_DATA_HALF,
-                                   /*batch_size=*/1,
-                                   /*channels=*/outc,
-                                   /*image_height=*/1,
-                                   /*image_width=*/1);
-    } else if (dtype == "float32") {
-        cudnnSetTensor4dDescriptor(bias_desc,
-                                   /*format=*/CUDNN_TENSOR_NCHW,
-                                   /*dataType=*/CUDNN_DATA_FLOAT,
-                                   /*batch_size=*/1,
-                                   /*channels=*/outc,
-                                   /*image_height=*/1,
-                                   /*image_width=*/1);
-    }
+    cudnnSetTensor4dDescriptor(bias_desc,
+                               /*format=*/infer_layout,
+                               /*dataType=*/infer_data_type,
+                               /*batch_size=*/1,
+                               /*channels=*/outc,
+                               /*image_height=*/1,
+                               /*image_width=*/1);
     // printf("bias shape : %d %d %d %d \n", 1, outc, 1, 1);
 
     cudnnCreateConvolutionDescriptor(&conv_desc);
+
     cudnnSetConvolution2dDescriptor(conv_desc, paddings.at(0), paddings.at(1), strides.at(0),
                                     strides.at(1), dilations.at(0), dilations.at(1),
                                     CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
@@ -109,9 +97,9 @@ int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
     cudnnConvolutionDescriptor_t conv_desc;
     cudnnTensorDescriptor_t bias_desc;
 
-    setup_descriptor_nchw(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                          bias_shape, out_shape, dtype, layout, input_desc, output_desc,
-                          kernel_desc, conv_desc, bias_desc);
+    setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
+                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
+                     conv_desc, bias_desc);
 
     cudnnConvolutionFwdAlgoPerf_t perfResults[10];
     int returnedAlgoCount = 0;
@@ -148,9 +136,9 @@ int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> pad
     cudnnFilterDescriptor_t kernel_desc;
     cudnnConvolutionDescriptor_t conv_desc;
     cudnnTensorDescriptor_t bias_desc;
-    setup_descriptor_nchw(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                          bias_shape, out_shape, dtype, layout, input_desc, output_desc,
-                          kernel_desc, conv_desc, bias_desc);
+    setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
+                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
+                     conv_desc, bias_desc);
 
     size_t space_size = 0;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
@@ -194,9 +182,9 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
     cudnnFilterDescriptor_t kernel_desc;
     cudnnConvolutionDescriptor_t conv_desc;
     cudnnTensorDescriptor_t bias_desc;
-    setup_descriptor_nchw(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                          bias_shape, out_shape, dtype, layout, input_desc, output_desc,
-                          kernel_desc, conv_desc, bias_desc);
+    setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
+                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
+                     conv_desc, bias_desc);
 
     size_t space_size_ = (size_t)workspace_size;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
@@ -237,7 +225,7 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
         cudnnSetActivationDescriptor(activation_desc, CUDNN_ACTIVATION_IDENTITY,
                                      CUDNN_PROPAGATE_NAN, 0);
 
-        // printf("algo %d, space size %ld, ptr %p \n\n", (int)algo_, space_size_,
+        // printf("[conv] algo %d, space size %ld, ptr %p \n\n", (int)algo_, space_size_,
         //        (void*)workspace_ptr);
 
         cudnnStatus_t Error = cudnnConvolutionBiasActivationForward(
