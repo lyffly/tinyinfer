@@ -430,15 +430,15 @@ class CastNode(Node):
         
         try: # use cuda cublas
             import kernels
-            kernels.cast(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+            kernels.datatype_convert(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                         in_edge.shape, out_edge.shape, "nchw", self.in_dtype, self.out_dtype, stream)
-            #print("****use cuda cast\n")
+            #print("****use cuda datatype_convert\n")
         except:
             if self.out_dtype == "float32":
                 out_edge.tensor = in_edge.tensor.float()
             elif self.out_dtype == "float16":
                 out_edge.tensor = in_edge.tensor.half()
-            #print("****use pytorch cast\n")
+            #print("****use pytorch datatype_convert\n")
 
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -452,7 +452,7 @@ class CastNode(Node):
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :
-            print("[Error] cast infer shape not support!!")
+            print("[Error] Cast infer shape not support!!")
 
     def infer_layouts(self):
         pass

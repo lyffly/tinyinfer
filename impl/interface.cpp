@@ -14,7 +14,7 @@ PYBIND11_MODULE(kernels, m) {
     m.def("elementwise", &elementwise_backend);
     m.def("activation", &activation_backend);
     m.def("gemm", &gemm_backend);
-    m.def("cast", &cast_backend);
+    m.def("datatype_convert", &datatype_convert_backend);
     m.def("conv2d", &conv2d_backend);
     m.def("get_conv2d_algo", &get_conv2d_algo);
     m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);

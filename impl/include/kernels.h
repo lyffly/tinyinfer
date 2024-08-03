@@ -84,13 +84,16 @@ bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t 
 
 //***********************************************************************************************************
 // data type convert
-bool cast_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+bool datatype_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
                   std::vector<int> out_shape, std::string layout, std::string in_dtype,
                   std::string out_dtype, int64_t pstream);
 
 
 //***********************************************************************************************************
 // conv2d
+int64_t get_conv2d_desc()
+
+
 int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
                         std::vector<int> strides, std::vector<int> dilations, int group,
                         std::vector<int> in_shape, std::vector<int> weight_shape,
