@@ -71,10 +71,11 @@ void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
     // printf("bias shape : %d %d %d %d \n", 1, outc, 1, 1);
 
     cudnnCreateConvolutionDescriptor(&conv_desc);
+    cudnnSetConvolutionMathType(conv_desc, CUDNN_TENSOR_OP_MATH);
 
     cudnnSetConvolution2dDescriptor(conv_desc, paddings.at(0), paddings.at(1), strides.at(0),
                                     strides.at(1), dilations.at(0), dilations.at(1),
-                                    CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
+                                    CUDNN_CROSS_CORRELATION, infer_data_type);
 
     // printf("padding : %d %d, stride: %d %d, dilation: %d %d \n", paddings.at(0), paddings.at(1),
     //        strides.at(0), strides.at(1), dilations.at(0), dilations.at(1));
@@ -108,7 +109,6 @@ int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
     cudnnFindConvolutionForwardAlgorithm(cudnn_handle, input_desc, kernel_desc, conv_desc,
                                          output_desc, 2, &returnedAlgoCount, perfResults);
 
-    //cudnnSetConvolutionMathType(conv_desc, CUDNN_DEFAULT_MATH);
     // printf("find algo: %d, math %d \n\n ", int32_t(perfResults[0].algo),
     //        int32_t(perfResults[0].mathType));
 

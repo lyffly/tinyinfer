@@ -79,7 +79,7 @@ class ConvNode(Node):
                 # print("[Python] conv workspace size : ", self.workspace_size)
 
             if self.support_layout=="nhwc":
-                kernels.layout_convert_backend(in_edge.tensor.data_ptr(), self.tmp_tensor_in.data_ptr(), 
+                kernels.layout_convert(in_edge.tensor.data_ptr(), self.tmp_tensor_in.data_ptr(), 
                                                in_edge.shape, in_edge.shape, self.network_precision, 
                                                "nchw", "nhwc" ,stream)
                 kernels.conv2d(self.tmp_tensor_in.data_ptr(), w_edge.tensor.data_ptr(), 
@@ -89,7 +89,7 @@ class ConvNode(Node):
                                 self.params.dilations, self.params.group, 
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
                                 self.network_precision, self.support_layout, stream)
-                kernels.layout_convert_backend(self.tmp_tensor_out.data_ptr(), out_edge.tensor.data_ptr(), 
+                kernels.layout_convert(self.tmp_tensor_out.data_ptr(), out_edge.tensor.data_ptr(), 
                                                out_edge.shape, out_edge.shape, self.network_precision, 
                                                "nhwc", "nchw" ,stream)
             elif self.support_layout=="nchw":
@@ -137,7 +137,7 @@ class ConvNode(Node):
                 _, stream = cudart.cudaStreamCreate()
                 weights_edge.tensor = weights_edge.tensor.cuda()
                 tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
-                kernels.layout_convert_backend(weights_edge.tensor.data_ptr(), weights_edge.tensor.data_ptr(), 
+                kernels.layout_convert(weights_edge.tensor.data_ptr(), weights_edge.tensor.data_ptr(), 
                                                weights_edge.shape, weights_edge.shape, self.network_precision, 
                                                "nchw", "nhwc" , stream)
                 weights_edge.tensor = tmp_tensor
@@ -152,7 +152,7 @@ class ConvNode(Node):
                 from cuda import cudart
                 _, stream = cudart.cudaStreamCreate()
                 tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
-                kernels.layout_convert_backend(weights_edge.tensor.data_ptr(), tmp_tensor.data_ptr(), 
+                kernels.layout_convert(weights_edge.tensor.data_ptr(), tmp_tensor.data_ptr(), 
                                                weights_edge.shape, weights_edge.shape, self.network_precision, 
                                                "nchw", "nhwc" , stream)
                 weights_edge.tensor = tmp_tensor

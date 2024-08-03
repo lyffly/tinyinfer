@@ -15,3 +15,4 @@ python3 test_resnet18_fp16.py
 2024-7-27 FPS=927 (FP16), 添加Relu和Add的CUDA实现  
 2024-7-28 FPS=930 (FP16), 添加cublas gemm, 去除h2d和d2h  
 2024-7-30 FPS=574 ??? (FP16), FPS=923 (FP32), 添加cudnn conv2d
+2024-8-3 FPS=715 ??? (FP16), FPS=936 (FP32), 添加convert layout
