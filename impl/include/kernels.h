@@ -61,6 +61,10 @@ class YTensor {
 };
 
 //***********************************************************************************************************
+// Handle
+void* create_handle();
+
+//***********************************************************************************************************
 // activation
 bool activation_backend(int64_t in_ptr, int64_t out_ptr, float alpha, float beta,
                         std::vector<int> in_shape, std::vector<int> out_shape, std::string dtype,
@@ -92,21 +96,20 @@ bool datatype_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> 
 
 //***********************************************************************************************************
 // conv2d
-int64_t get_conv2d_desc();
-
+void* create_conv2d_desc();
 
 int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
                         std::vector<int> strides, std::vector<int> dilations, int group,
                         std::vector<int> in_shape, std::vector<int> weight_shape,
                         std::vector<int> bias_shape, std::vector<int> out_shape, std::string dtype,
-                        std::string layout, int64_t pstream);
+                        std::string layout, int64_t pstream, void* desc);
 
 int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> paddings,
                                   std::vector<int> strides, std::vector<int> dilations, int group,
                                   std::vector<int> in_shape, std::vector<int> weight_shape,
                                   std::vector<int> bias_shape, std::vector<int> out_shape,
                                   std::string dtype, std::string layout, int64_t algo,
-                                  int64_t pstream);
+                                  int64_t pstream, void* desc);
 
 bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
                     int64_t workspace_size, int64_t workspace_ptr, int64_t algo,
@@ -114,7 +117,7 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
                     std::vector<int> dilations, int group, std::vector<int> in_shape,
                     std::vector<int> weight_shape, std::vector<int> bias_shape,
                     std::vector<int> out_shape, std::string dtype, std::string layout,
-                    int64_t pstream);
+                    int64_t pstream, void* desc);
 
 
 //***********************************************************************************************************
@@ -122,3 +125,5 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
 bool layout_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
                             std::vector<int> out_shape, std::string dtype, std::string in_layout,
                             std::string out_layout, int64_t pstream);
+
+//***********************************************************************************************************

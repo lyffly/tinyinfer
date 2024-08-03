@@ -35,7 +35,7 @@ struct ConvDesc {
     cudnnActivationDescriptor_t activation_desc;
 };
 
-struct Context {
+struct Handles {
     cudnnHandle_t cudnn_handle;
     cudaStream_t cuda_stream;
     cublasHandle_t cublas_handle;

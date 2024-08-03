@@ -16,9 +16,11 @@ PYBIND11_MODULE(kernels, m) {
     m.def("gemm", &gemm_backend);
     m.def("datatype_convert", &datatype_convert_backend);
     m.def("conv2d", &conv2d_backend);
+    m.def("create_conv2d_desc", &create_conv2d_desc);
     m.def("get_conv2d_algo", &get_conv2d_algo);
     m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);
     m.def("layout_convert", &layout_convert_backend);
+    m.def("create_handle", &create_handle);
 
     py::enum_<DataType>(m, "DataType")
         .value("INT8", DataType::INT8)

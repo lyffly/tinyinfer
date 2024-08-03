@@ -2,6 +2,7 @@
 #include "../../include/kernels.h"
 #include "cuda_fp16.h"
 #include "cuda_runtime.h"
+#include "helper.h"
 #include "math.h"
 #include "stdio.h"
 
@@ -47,4 +48,10 @@ Dims YTensor::GetShape() {
         dims.d[i] = this->d[i];
     }
     return dims;
+}
+
+
+void* create_handle() {
+    Handles* handle = new Handles();
+    return (void*)handle;
 }

@@ -17,13 +17,24 @@
 
 static cudnnHandle_t cudnn_handle;
 
+void* create_conv2d_desc() {
+    ConvDesc* desc = new ConvDesc();
+    cudnnCreateTensorDescriptor(&desc->input_desc);
+    cudnnCreateTensorDescriptor(&desc->output_desc);
+    cudnnCreateFilterDescriptor(&desc->kernel_desc);
+    cudnnCreateTensorDescriptor(&desc->bias_desc);
+    cudnnCreateConvolutionDescriptor(&desc->conv_desc);
+    cudnnCreateActivationDescriptor(&desc->activation_desc);
+    cudnnCreateActivationDescriptor(&desc->activation_desc);
+    return (void*)desc;
+}
+
 void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
                       std::vector<int>& strides, std::vector<int>& dilations, int group,
                       std::vector<int>& in_shape, std::vector<int>& weight_shape,
                       std::vector<int>& bias_shape, std::vector<int>& out_shape, std::string dtype,
-                      std::string layout, cudnnTensorDescriptor_t& input_desc,
-                      cudnnTensorDescriptor_t& output_desc, cudnnFilterDescriptor_t& kernel_desc,
-                      cudnnConvolutionDescriptor_t& conv_desc, cudnnTensorDescriptor_t& bias_desc) {
+                      std::string layout, void* desc) {
+    ConvDesc* desc_ = (ConvDesc*)desc;
     cudnnDataType_t infer_data_type;
     cudnnTensorFormat_t infer_layout;
     if (layout == "nchw") {
@@ -48,20 +59,22 @@ void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
     // printf("input shape : %d %d %d %d \n", batch, inc, inh, inw);
     // printf("output shape : %d %d %d %d \n", batch, outc, outh, outw);
 
-    cudnnCreateTensorDescriptor(&input_desc);
-    cudnnSetTensor4dDescriptor(input_desc, infer_layout, infer_data_type, batch, inc, inh, inw);
+    // cudnnCreateTensorDescriptor(&desc_->input_desc);
+    cudnnSetTensor4dDescriptor(desc_->input_desc, infer_layout, infer_data_type, batch, inc, inh,
+                               inw);
 
-    cudnnCreateTensorDescriptor(&output_desc);
-    cudnnSetTensor4dDescriptor(output_desc, infer_layout, infer_data_type, batch, outc, outh, outw);
+    // cudnnCreateTensorDescriptor(&desc_->output_desc);
+    cudnnSetTensor4dDescriptor(desc_->output_desc, infer_layout, infer_data_type, batch, outc, outh,
+                               outw);
 
-    cudnnCreateFilterDescriptor(&kernel_desc);
-    cudnnSetFilter4dDescriptor(kernel_desc, infer_data_type, infer_layout, outc, inc, kernels.at(0),
-                               kernels.at(1));
+    // cudnnCreateFilterDescriptor(&desc_->kernel_desc);
+    cudnnSetFilter4dDescriptor(desc_->kernel_desc, infer_data_type, infer_layout, outc, inc,
+                               kernels.at(0), kernels.at(1));
 
     // printf("kernel shape : %d %d %d %d \n", outc, inc, kernels.at(0), kernels.at(1));
 
-    cudnnCreateTensorDescriptor(&bias_desc);
-    cudnnSetTensor4dDescriptor(bias_desc,
+    // cudnnCreateTensorDescriptor(&desc_->bias_desc);
+    cudnnSetTensor4dDescriptor(desc_->bias_desc,
                                /*format=*/infer_layout,
                                /*dataType=*/infer_data_type,
                                /*batch_size=*/1,
@@ -70,44 +83,47 @@ void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
                                /*image_width=*/1);
     // printf("bias shape : %d %d %d %d \n", 1, outc, 1, 1);
 
-    cudnnCreateConvolutionDescriptor(&conv_desc);
-    cudnnSetConvolutionMathType(conv_desc, CUDNN_TENSOR_OP_MATH);
+    // cudnnCreateConvolutionDescriptor(&desc_->conv_desc);
+    cudnnSetConvolutionMathType(desc_->conv_desc, CUDNN_TENSOR_OP_MATH);
 
-    cudnnSetConvolution2dDescriptor(conv_desc, paddings.at(0), paddings.at(1), strides.at(0),
+    cudnnSetConvolution2dDescriptor(desc_->conv_desc, paddings.at(0), paddings.at(1), strides.at(0),
                                     strides.at(1), dilations.at(0), dilations.at(1),
                                     CUDNN_CROSS_CORRELATION, infer_data_type);
 
     // printf("padding : %d %d, stride: %d %d, dilation: %d %d \n", paddings.at(0), paddings.at(1),
     //        strides.at(0), strides.at(1), dilations.at(0), dilations.at(1));
-    cudnnSetConvolutionGroupCount(conv_desc, group);
+    cudnnSetConvolutionGroupCount(desc_->conv_desc, group);
+    cudnnSetActivationDescriptor(desc_->activation_desc, CUDNN_ACTIVATION_IDENTITY,
+                                 CUDNN_PROPAGATE_NAN, 0);
 }
 
 int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
                         std::vector<int> strides, std::vector<int> dilations, int group,
                         std::vector<int> in_shape, std::vector<int> weight_shape,
                         std::vector<int> bias_shape, std::vector<int> out_shape, std::string dtype,
-                        std::string layout, int64_t pstream) {
+                        std::string layout, int64_t pstream, void* desc) {
+    ConvDesc* desc_ = (ConvDesc*)desc;
     if (!cudnn_handle) {
         cudnnCreate(&cudnn_handle);
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
 
-    cudnnTensorDescriptor_t input_desc;
-    cudnnTensorDescriptor_t output_desc;
-    cudnnFilterDescriptor_t kernel_desc;
-    cudnnConvolutionDescriptor_t conv_desc;
-    cudnnTensorDescriptor_t bias_desc;
+    // cudnnTensorDescriptor_t input_desc;
+    // cudnnTensorDescriptor_t output_desc;
+    // cudnnFilterDescriptor_t kernel_desc;
+    // cudnnConvolutionDescriptor_t conv_desc;
+    // cudnnTensorDescriptor_t bias_desc;
 
     setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
-                     conv_desc, bias_desc);
+                     bias_shape, out_shape, dtype, layout, desc_);
 
     cudnnConvolutionFwdAlgoPerf_t perfResults[10];
     int returnedAlgoCount = 0;
     // cudnnGetConvolutionForwardAlgorithm_v7(cudnn_handle, input_desc, kernel_desc, conv_desc,
     //                                        output_desc, 1, &returnedAlgoCount, perfResults);
-    cudnnFindConvolutionForwardAlgorithm(cudnn_handle, input_desc, kernel_desc, conv_desc,
-                                         output_desc, 2, &returnedAlgoCount, perfResults);
+    cudnnFindConvolutionForwardAlgorithm(cudnn_handle, desc_->input_desc, desc_->kernel_desc,
+                                         desc_->conv_desc, desc_->output_desc, 2,
+                                         &returnedAlgoCount, perfResults);
 
     // printf("find algo: %d, math %d \n\n ", int32_t(perfResults[0].algo),
     //        int32_t(perfResults[0].mathType));
@@ -125,26 +141,28 @@ int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> pad
                                   std::vector<int> in_shape, std::vector<int> weight_shape,
                                   std::vector<int> bias_shape, std::vector<int> out_shape,
                                   std::string dtype, std::string layout, int64_t algo,
-                                  int64_t pstream) {
+                                  int64_t pstream, void* desc) {
+    ConvDesc* desc_ = (ConvDesc*)desc;
     if (!cudnn_handle) {
         cudnnCreate(&cudnn_handle);
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
 
-    cudnnTensorDescriptor_t input_desc;
-    cudnnTensorDescriptor_t output_desc;
-    cudnnFilterDescriptor_t kernel_desc;
-    cudnnConvolutionDescriptor_t conv_desc;
-    cudnnTensorDescriptor_t bias_desc;
-    setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
-                     conv_desc, bias_desc);
+    // cudnnTensorDescriptor_t input_desc;
+    // cudnnTensorDescriptor_t output_desc;
+    // cudnnFilterDescriptor_t kernel_desc;
+    // cudnnConvolutionDescriptor_t conv_desc;
+    // cudnnTensorDescriptor_t bias_desc;
+    // setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
+    //                  bias_shape, out_shape, dtype, layout, desc_->input_desc, desc_->output_desc,
+    //                  desc_->kernel_desc, desc_->conv_desc, desc_->bias_desc);
 
     size_t space_size = 0;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
 
     cudnnStatus_t Error = cudnnGetConvolutionForwardWorkspaceSize(
-        cudnn_handle, input_desc, kernel_desc, conv_desc, output_desc, algo_, &space_size);
+        cudnn_handle, desc_->input_desc, desc_->kernel_desc, desc_->conv_desc, desc_->output_desc,
+        algo_, &space_size);
     if (Error != CUDNN_STATUS_SUCCESS) {
         fprintf(stderr, "[Error] cudnn get workspace size failed!\n");
     }
@@ -170,21 +188,21 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
                     std::vector<int> dilations, int group, std::vector<int> in_shape,
                     std::vector<int> weight_shape, std::vector<int> bias_shape,
                     std::vector<int> out_shape, std::string dtype, std::string layout,
-                    int64_t pstream) {
-
+                    int64_t pstream, void* desc) {
+    ConvDesc* desc_ = (ConvDesc*)desc;
     if (!cudnn_handle) {
         cudnnCreate(&cudnn_handle);
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
 
-    cudnnTensorDescriptor_t input_desc;
-    cudnnTensorDescriptor_t output_desc;
-    cudnnFilterDescriptor_t kernel_desc;
-    cudnnConvolutionDescriptor_t conv_desc;
-    cudnnTensorDescriptor_t bias_desc;
-    setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-                     bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
-                     conv_desc, bias_desc);
+    // cudnnTensorDescriptor_t input_desc;
+    // cudnnTensorDescriptor_t output_desc;
+    // cudnnFilterDescriptor_t kernel_desc;
+    // cudnnConvolutionDescriptor_t conv_desc;
+    // cudnnTensorDescriptor_t bias_desc;
+    // setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
+    //                  bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
+    //                  conv_desc, bias_desc);
 
     size_t space_size_ = (size_t)workspace_size;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
@@ -220,19 +238,16 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
 
     // conv bias activation
     {
-        cudnnActivationDescriptor_t activation_desc;
-        cudnnCreateActivationDescriptor(&activation_desc);
-        cudnnSetActivationDescriptor(activation_desc, CUDNN_ACTIVATION_IDENTITY,
-                                     CUDNN_PROPAGATE_NAN, 0);
+        // cudnnActivationDescriptor_t activation_desc;
 
         // printf("[conv] algo %d, space size %ld, ptr %p \n\n", (int)algo_, space_size_,
         //        (void*)workspace_ptr);
 
         cudnnStatus_t Error = cudnnConvolutionBiasActivationForward(
-            cudnn_handle, &alpha_, input_desc, (void*)in_ptr, kernel_desc, (void*)weight_ptr,
-            conv_desc, algo_, (void*)workspace_ptr, space_size_, &beta_, output_desc,
-            (void*)out_ptr, bias_desc, (void*)bias_ptr, activation_desc, output_desc,
-            (void*)out_ptr);
+            cudnn_handle, &alpha_, desc_->input_desc, (void*)in_ptr, desc_->kernel_desc,
+            (void*)weight_ptr, desc_->conv_desc, algo_, (void*)workspace_ptr, space_size_, &beta_,
+            desc_->output_desc, (void*)out_ptr, desc_->bias_desc, (void*)bias_ptr,
+            desc_->activation_desc, desc_->output_desc, (void*)out_ptr);
 
         if (Error != CUDNN_STATUS_SUCCESS) {
             fprintf(stderr, "[Error] cudnn forward failed!\n");

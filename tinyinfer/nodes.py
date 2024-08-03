@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 from cuda import cudart
+import kernels
 
 class Node:
     def __init__(self):
@@ -46,6 +47,7 @@ class ConvNode(Node):
         self.support_layout="nhwc"
         self.tmp_tensor_in = None
         self.tmp_tensor_out = None
+        self.desc = None
 
 
     def run(self, stream):
@@ -58,21 +60,20 @@ class ConvNode(Node):
         # try:
         if True:
             # print("\n****use cudnn conv")
-            import kernels
             if self.algo < 0:
                 # print("[Python] conv algo init : ", self.algo)
                 self.algo = kernels.get_conv2d_algo(
                                 self.params.kernel_shape, self.params.pads, self.params.strides,
                                 self.params.dilations, self.params.group, 
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
-                                self.network_precision, self.support_layout, stream)
+                                self.network_precision, self.support_layout, stream, self.desc)
                 assert self.algo >= 0
                 # print("[Python] conv algo find : ", self.algo)
                 self.workspace_size = kernels.get_conv2d_workspace_size(
                                 self.params.kernel_shape, self.params.pads, self.params.strides,
                                 self.params.dilations, self.params.group, 
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
-                                self.network_precision, self.support_layout, self.algo, stream)
+                                self.network_precision, self.support_layout, self.algo, stream, self.desc)
                 assert self.workspace_size >= 0
                 if self.workspace_size > 0:
                     _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
@@ -88,7 +89,7 @@ class ConvNode(Node):
                                 self.params.kernel_shape, self.params.pads, self.params.strides,
                                 self.params.dilations, self.params.group, 
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
-                                self.network_precision, self.support_layout, stream)
+                                self.network_precision, self.support_layout, stream, self.desc)
                 kernels.layout_convert(self.tmp_tensor_out.data_ptr(), out_edge.tensor.data_ptr(), 
                                                out_edge.shape, out_edge.shape, self.network_precision, 
                                                "nhwc", "nchw" ,stream)
@@ -99,7 +100,7 @@ class ConvNode(Node):
                                 self.params.kernel_shape, self.params.pads, self.params.strides,
                                 self.params.dilations, self.params.group, 
                                 in_edge.shape, w_edge.shape, b_edge.shape, out_edge.shape, 
-                                self.network_precision, "nchw", stream)
+                                self.network_precision, "nchw", stream, self.desc)
             
             # print("cudnn : ",out_edge.tensor[0][0][0][:10])
         # except:
@@ -111,6 +112,7 @@ class ConvNode(Node):
     
     
     def infer_shapes(self):
+        self.desc = kernels.create_conv2d_desc()
         in_edge = self.all_edges[self.input_names[0]]
         weights_edge = self.all_edges[self.input_names[1]]
         if len(self.input_names) > 2:
@@ -122,7 +124,7 @@ class ConvNode(Node):
         padh = (self.params.pads[0] +self.params.pads[2] ) /2
         padw = (self.params.pads[1] +self.params.pads[3] ) /2
         oh = math.floor((h + 2*padh - self.params.dilations[0] * (kh -1) -1)/self.params.strides[0]  +1)
-        ow = math.floor((h + 2*padw - self.params.dilations[1] * (kw -1) -1)/self.params.strides[1]  +1)
+        ow = math.floor((w + 2*padw - self.params.dilations[1] * (kw -1) -1)/self.params.strides[1]  +1)
         
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = [n,oc,oh,ow]
@@ -132,8 +134,7 @@ class ConvNode(Node):
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
             if self.support_layout=="nhwc":
-                import kernels
-                from cuda import cudart
+                
                 _, stream = cudart.cudaStreamCreate()
                 weights_edge.tensor = weights_edge.tensor.cuda()
                 tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
@@ -148,8 +149,6 @@ class ConvNode(Node):
             out_edge.dtype = "float16"
             weights_edge.tensor = weights_edge.tensor.half().cuda()
             if self.support_layout=="nhwc":
-                import kernels
-                from cuda import cudart
                 _, stream = cudart.cudaStreamCreate()
                 tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
                 kernels.layout_convert(weights_edge.tensor.data_ptr(), tmp_tensor.data_ptr(), 
@@ -181,7 +180,6 @@ class ActivationNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         
         try:
-            import kernels
             #print("****use cuda activation")
             kernels.activation(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(), self.params.alpha,
                                 self.params.beta, in_edge.shape, out_edge.shape, self.network_precision,
@@ -220,7 +218,6 @@ class ElementwiseNode(Node):
         in_edge1 = self.all_edges[self.input_names[1]]
         out_edge = self.all_edges[self.output_names[0]]
         try:
-            import kernels
             # print("****use cuda elementwise")
             kernels.elementwise(in_edge0.tensor.data_ptr(), in_edge1.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                                 in_edge0.shape, in_edge1.shape, out_edge.shape, self.network_precision,
@@ -328,7 +325,6 @@ class GemmNode(Node):
             bias_edge = self.all_edges[self.input_names[2]]
         
         try: # use cuda cublas
-            import kernels
             if self.workspace_size : 
                 _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
             if bias_edge:
@@ -429,7 +425,6 @@ class CastNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         
         try: # use cuda cublas
-            import kernels
             kernels.datatype_convert(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                         in_edge.shape, out_edge.shape, "nchw", self.in_dtype, self.out_dtype, stream)
             #print("****use cuda datatype_convert\n")
