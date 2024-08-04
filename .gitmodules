@@ -10,3 +10,6 @@
 [submodule "3rd/MNN"]
 	path = 3rd/MNN
 	url = https://gitee.com/yunfeiliu/MNN
+[submodule "3rd/llama.cpp"]
+	path = 3rd/llama.cpp
+	url = https://gitee.com/yunfeiliu/llama.cpp
