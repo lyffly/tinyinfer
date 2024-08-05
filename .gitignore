@@ -19,6 +19,10 @@ tinyinfer/__pycache__
 tinyinfer/__pycache__/
 tinyinfer/__pycache__/*.pyc
 *.nsys-rep
+Qwen2-0.5B-Instruct/
+Qwen2-0.5B-Instruct-GGUF/
+*.onnx
+
 # Compiled Object files
 *.slo
 *.lo

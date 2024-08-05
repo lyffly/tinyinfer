@@ -13,3 +13,6 @@
 [submodule "3rd/llama.cpp"]
 	path = 3rd/llama.cpp
 	url = https://gitee.com/yunfeiliu/llama.cpp
+[submodule "Qwen2"]
+	path = 3rd/Qwen2
+	url = https://github.com/QwenLM/Qwen2
