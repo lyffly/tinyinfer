@@ -23,27 +23,34 @@ PYBIND11_MODULE(kernels, m) {
     m.def("create_handle", &create_handle);
 
     py::enum_<DataType>(m, "DataType")
-        .value("INT8", DataType::INT8)
-        .value("HALF", DataType::HALF)
-        .value("FLOAT16", DataType::FLOAT16)
-        .value("FLOAT32", DataType::FLOAT32)
-        .value("INT32", DataType::INT32)
-        .value("INT64", DataType::INT64)
-        .value("BOOL", DataType::BOOL)
+        .value("int8", DataType::INT8)
+        .value("half", DataType::HALF)
+        .value("float16", DataType::FLOAT16)
+        .value("float32", DataType::FLOAT32)
+        .value("int32", DataType::INT32)
+        .value("int64", DataType::INT64)
+        .value("bool", DataType::BOOL)
         .export_values();
 
     py::enum_<DataLayout>(m, "DataLayout")
-        .value("NCHW", DataLayout::NCHW)
-        .value("NHWC", DataLayout::NHWC)
+        .value("nchw", DataLayout::NCHW)
+        .value("nhwc", DataLayout::NHWC)
         .export_values();
 
     py::class_<Dims>(m, "Dims")
         .def(py::init())
-        .def_readwrite("nbDims", &Dims::nbDims)
-        .def_readwrite("d", &Dims::d);
+        .def_readwrite("nb_dims", &Dims::nb_dims)
+        .def_readwrite("shape", &Dims::shapes);
 
     py::class_<YTensor>(m, "YTensor")
         .def(py::init())
         .def_property("data_ptr", &YTensor::GetDataPtr, &YTensor::SetDataPtr)
-        .def_property("shape", &YTensor::GetShape, &YTensor::SetShape);
+        .def_property("shape", &YTensor::GetShape, &YTensor::SetShape)
+        .def("malloc", &YTensor::Malloc)
+        .def("free", &YTensor::Free)
+        .def("zeros", &YTensor::Zeros)
+        .def("float", &YTensor::Float)
+        .def("half", &YTensor::Half)
+        .def("cuda", &YTensor::CUDA)
+        .def("cpu", &YTensor::CPU);
 }

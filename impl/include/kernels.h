@@ -9,8 +9,8 @@
 
 class Dims {
    public:
-    int nbDims;
-    std::vector<int> d;
+    int nb_dims;
+    std::vector<int> shapes;
 };
 
 enum class DataType {
@@ -30,21 +30,22 @@ enum class DataLayout {
 
 class YTensor {
    public:
-    int nbDims;
-    std::vector<int> d;
+    int nb_dims;
+    std::vector<int> shape;
     void* data;
     bool is_gpu;
-    DataType type;
+    DataType dtype;
     DataLayout layout;
+    size_t length;
+    int sizeoftype;
     float scale;
     float* channel_scale;
 
    public:
     YTensor();
     ~YTensor();
-    bool Malloc(Dims dims, DataType dtype, DataLayout layout, int64_t length);
+    bool Malloc(Dims dims, DataType dtype, DataLayout layout);
     bool Free();
-    bool Zeros(Dims dims, DataType dtype);
     bool Zeros(Dims dims, DataType dtype, DataLayout layout);
     bool Float();
     bool Half();
