@@ -53,8 +53,8 @@ class YTensor {
     bool CPU();
     int64_t GetDataPtr();
     void SetDataPtr(int64_t ptr);
-    Dims GetShape();
-    void SetShape(Dims dims);
+    std::vector<int> GetShape();
+    void SetShape(std::vector<int> dims);
 
    private:
     void* cpu_ptr;
