@@ -31,6 +31,20 @@ size_t GetProdofVector(std::vector<int> shapes) {
     return sum;
 }
 
+__global__ void convert_fp32_to_fp16_cuda(float* in_ptr, half* out_ptr, int length) {
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    if (index < length) {
+        out_ptr[index] = __float2half(in_ptr[index]);
+    }
+}
+
+__global__ void convert_fp16_to_fp32_cuda(half* in_ptr, float* out_ptr, int length) {
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    if (index < length) {
+        out_ptr[index] = __half2float(in_ptr[index]);
+    }
+}
+
 YTensor::YTensor() {}
 
 YTensor::~YTensor() {
@@ -83,10 +97,56 @@ bool YTensor::Zeros(Dims dims, DataType dtype, DataLayout layout) {
 }
 
 bool YTensor::Float() {
+    if (!this->is_gpu) {
+        printf("[Error] data not on gpu !!\n");
+        return false;
+    }
+    if (this->dtype == DataType::HALF) {
+        this->dtype = DataType::HALF;
+        this->sizeoftype = sizeof(float);
+        int block_size = 512;
+        int grid_size = (this->length + block_size - 1) / block_size;
+        void* tmp;
+        cudaMalloc((void**)&tmp, this->length * sizeof(half));
+        cudaMemcpy(tmp, this->gpu_ptr, this->length * sizeof(half), cudaMemcpyDeviceToDevice);
+        cudaMalloc((void**)&(this->gpu_ptr), this->length * this->sizeoftype);
+        convert_fp16_to_fp32_cuda<<<grid_size, block_size>>>((half*)tmp, (float*)this->gpu_ptr,
+                                                             this->length);
+        this->data = this->gpu_ptr;
+        cudaFree(tmp);
+    } else if (this->dtype == DataType::FLOAT32) {
+        return true;
+    } else {
+        printf("[Error] datatype not correct !!\n");
+        return false;
+    }
     return true;
 }
 
 bool YTensor::Half() {
+    if (!this->is_gpu) {
+        printf("[Error] data not on gpu !!\n");
+        return false;
+    }
+    if (this->dtype == DataType::FLOAT32) {
+        this->dtype = DataType::FLOAT32;
+        this->sizeoftype = sizeof(half);
+        int block_size = 512;
+        int grid_size = (this->length + block_size - 1) / block_size;
+        void* tmp;
+        cudaMalloc((void**)&tmp, this->length * sizeof(float));
+        cudaMemcpy(tmp, this->gpu_ptr, this->length * sizeof(float), cudaMemcpyDeviceToDevice);
+        cudaMalloc((void**)&(this->gpu_ptr), this->length * this->sizeoftype);
+        convert_fp32_to_fp16_cuda<<<grid_size, block_size>>>((float*)tmp, (half*)this->gpu_ptr,
+                                                             this->length);
+        this->data = this->gpu_ptr;
+        cudaFree(tmp);
+    } else if (this->dtype == DataType::HALF) {
+        return true;
+    } else {
+        printf("[Error] datatype not correct !!\n");
+        return false;
+    }
     return true;
 }
 
@@ -112,6 +172,7 @@ bool YTensor::CPU() {
     }
     this->is_gpu = false;
     this->data = this->cpu_ptr;
+    this->gpu_ptr = nullptr;
     return true;
 }
 
