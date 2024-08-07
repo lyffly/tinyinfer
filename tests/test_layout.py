@@ -3,11 +3,11 @@ from kernels import DataLayout
 import pytest
 
 def test_data_layput():
-    a = DataLayout.NCHW
+    a = DataLayout.nchw
     print(a)
-    b = DataLayout.NHWC
+    b = DataLayout.nhwc
     
-    assert a == DataLayout.NCHW
+    assert a == DataLayout.nchw
     assert b != a
-    assert DataLayout.NHWC ==DataLayout.NHWC
+    assert DataLayout.nhwc ==DataLayout.nhwc
 

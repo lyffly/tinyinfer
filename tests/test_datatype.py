@@ -3,12 +3,12 @@ from kernels import DataType
 import pytest
 
 def test_data_type():
-    a = DataType.INT8
+    a = DataType.int8
     print(a)
-    b = DataType.HALF
-    c = DataType.FLOAT16
+    b = DataType.half
+    c = DataType.float16
     
-    assert a == DataType.INT8
+    assert a == DataType.int8
     assert b == c
-    assert DataType.FLOAT32 == DataType.FLOAT32
+    assert DataType.float32 == DataType.float32
 
