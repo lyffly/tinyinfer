@@ -22,6 +22,7 @@ PYBIND11_MODULE(kernels, m) {
     m.def("layout_convert", &layout_convert_backend);
     m.def("create_handle", &create_handle);
     m.def("create_pooling_desc", &create_pooling_desc);
+    m.def("setup_pooling_descriptor", &setup_pooling_descriptor);
     m.def("pooling", &pooling_backend);
 
     py::enum_<DataType>(m, "DataType")

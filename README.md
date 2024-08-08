@@ -19,7 +19,7 @@
 - [ ] 实现显存池，减少显存使用
 - [x] 使用cublas的gemm
 - [x] 使用cudnn的conv2d
-- [ ] 使用cudnn的pooling
+- [x] 使用cudnn的pooling
 - [ ] cutlass实现gemm
 - [ ] cutlass实现conv2d
 - [x] 支持ONNX模型（CV模型）

@@ -20,9 +20,9 @@ class ElementwiseParams :
 class PoolParams :
     def __init__(self):
         self.type = None
-        self.pads = None
-        self.kernel_shape = None
-        self.strides = None
+        self.pads = []
+        self.kernel_shape = []
+        self.strides = []
         self.ceil_mode = 0
 
 class FlattenParams :

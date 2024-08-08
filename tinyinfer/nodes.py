@@ -251,6 +251,7 @@ class PoolNode(Node):
         super().__init__()
         self.params = PoolParams()
         self.type = "pool"
+        self.desc = None
 
     def run(self, stream):
         for name in self.input_names:
@@ -261,13 +262,31 @@ class PoolNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
             n,c,h,w = in_edge.tensor.shape
-            out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
+            # (int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
+            #          std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
+            #          std::vector<int> out_shape, std::string optype, std::string dtype,
+            #          std::string layout, int64_t pstream, void* desc)
+            try:
+                #print("****use cudnn GlobalAveragePool")
+                kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
+                                self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
+                                self.network_precision, "nchw", stream, self.desc)
+            except:
+                out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
+            
         elif self.type == "MaxPool":
-            out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
+            try:
+                #print("****use cudnn MaxPool")
+                kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
+                                self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
+                                self.network_precision, "nchw", stream, self.desc)
+            except:
+                out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
                                         stride=self.params.strides,padding=self.params.pads[:2])
 
 
     def infer_shapes(self):
+        self.desc = kernels.create_pooling_desc()
         in_edge = self.all_edges[self.input_names[0]]
         n,c,h,w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
@@ -302,7 +321,10 @@ class PoolNode(Node):
                 out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
             else :
                 print("[Error] maxpool infer shape not support!!")
-
+        kernels.setup_pooling_descriptor(self.params.kernel_shape, self.params.pads,
+                              self.params.strides, in_edge.shape,
+                              out_edge.shape, self.type, self.network_precision,
+                              "nchw", self.desc)
 
     def infer_layouts(self):
         pass

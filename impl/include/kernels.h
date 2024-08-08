@@ -124,6 +124,11 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
 // pooling
 void* create_pooling_desc();
 
+void setup_pooling_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
+                              std::vector<int>& strides, std::vector<int>& in_shape,
+                              std::vector<int>& out_shape, std::string optype, std::string dtype,
+                              std::string layout, void* desc);
+
 bool pooling_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
                      std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
                      std::vector<int> out_shape, std::string optype, std::string dtype,
