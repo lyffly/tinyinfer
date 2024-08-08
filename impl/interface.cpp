@@ -21,6 +21,8 @@ PYBIND11_MODULE(kernels, m) {
     m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);
     m.def("layout_convert", &layout_convert_backend);
     m.def("create_handle", &create_handle);
+    m.def("create_pooling_desc", &create_pooling_desc);
+    m.def("pooling", &pooling_backend);
 
     py::enum_<DataType>(m, "DataType")
         .value("int8", DataType::INT8)

@@ -35,6 +35,12 @@ struct ConvDesc {
     cudnnActivationDescriptor_t activation_desc;
 };
 
+struct PoolDesc {
+    cudnnTensorDescriptor_t input_desc;
+    cudnnTensorDescriptor_t output_desc;
+    cudnnPoolingDescriptor_t pooling_desc;
+};
+
 struct Handles {
     cudnnHandle_t cudnn_handle;
     cudaStream_t cuda_stream;
