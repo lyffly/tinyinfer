@@ -24,6 +24,8 @@
 - [ ] cutlass实现conv2d
 - [x] 支持ONNX模型（CV模型）
 - [ ] 支持GGUF的模型（大模型）
+- [ ] 引入triton生成后端算子
+- [ ] stablehlo,使用mlir生成cubin然后调用
 
 #### 编译
 
@@ -48,4 +50,16 @@ python3 test_resnet18_fp16.py
 
 #### 愿景
 
-不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。
+不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。由于在职，部分优化不方便公开。
+
+#### 参考或看过或未来会用到的仓库
+
+1、<https://github.com/OpenPPL/ppl.kernel.cuda>  
+2、<https://github.com/OpenPPL/ppl.llm.kernel.cuda>  
+3、<https://github.com/alibaba/MNN>  
+4、<https://github.com/Tencent/TNN>  
+5、<https://github.com/ggerganov/llama.cpp>  
+6、<https://github.com/karpathy/llm.c>  
+7、<https://github.com/triton-lang/triton>  
+8、<https://github.com/NVIDIA/cutlass>  
+9、<https://github.com/NVIDIA/TensorRT>  
