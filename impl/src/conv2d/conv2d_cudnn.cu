@@ -59,21 +59,15 @@ void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
     // printf("input shape : %d %d %d %d \n", batch, inc, inh, inw);
     // printf("output shape : %d %d %d %d \n", batch, outc, outh, outw);
 
-    // cudnnCreateTensorDescriptor(&desc_->input_desc);
     cudnnSetTensor4dDescriptor(desc_->input_desc, infer_layout, infer_data_type, batch, inc, inh,
                                inw);
-
-    // cudnnCreateTensorDescriptor(&desc_->output_desc);
     cudnnSetTensor4dDescriptor(desc_->output_desc, infer_layout, infer_data_type, batch, outc, outh,
                                outw);
-
-    // cudnnCreateFilterDescriptor(&desc_->kernel_desc);
     cudnnSetFilter4dDescriptor(desc_->kernel_desc, infer_data_type, infer_layout, outc, inc,
                                kernels.at(0), kernels.at(1));
 
     // printf("kernel shape : %d %d %d %d \n", outc, inc, kernels.at(0), kernels.at(1));
 
-    // cudnnCreateTensorDescriptor(&desc_->bias_desc);
     cudnnSetTensor4dDescriptor(desc_->bias_desc,
                                /*format=*/infer_layout,
                                /*dataType=*/infer_data_type,
@@ -83,7 +77,6 @@ void setup_descriptor(std::vector<int>& kernels, std::vector<int>& paddings,
                                /*image_width=*/1);
     // printf("bias shape : %d %d %d %d \n", 1, outc, 1, 1);
 
-    // cudnnCreateConvolutionDescriptor(&desc_->conv_desc);
     cudnnSetConvolutionMathType(desc_->conv_desc, CUDNN_TENSOR_OP_MATH);
 
     cudnnSetConvolution2dDescriptor(desc_->conv_desc, paddings.at(0), paddings.at(1), strides.at(0),
@@ -107,12 +100,6 @@ int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
         cudnnCreate(&cudnn_handle);
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
-
-    // cudnnTensorDescriptor_t input_desc;
-    // cudnnTensorDescriptor_t output_desc;
-    // cudnnFilterDescriptor_t kernel_desc;
-    // cudnnConvolutionDescriptor_t conv_desc;
-    // cudnnTensorDescriptor_t bias_desc;
 
     setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
                      bias_shape, out_shape, dtype, layout, desc_);
@@ -147,15 +134,6 @@ int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> pad
         cudnnCreate(&cudnn_handle);
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
-
-    // cudnnTensorDescriptor_t input_desc;
-    // cudnnTensorDescriptor_t output_desc;
-    // cudnnFilterDescriptor_t kernel_desc;
-    // cudnnConvolutionDescriptor_t conv_desc;
-    // cudnnTensorDescriptor_t bias_desc;
-    // setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-    //                  bias_shape, out_shape, dtype, layout, desc_->input_desc, desc_->output_desc,
-    //                  desc_->kernel_desc, desc_->conv_desc, desc_->bias_desc);
 
     size_t space_size = 0;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
@@ -195,15 +173,6 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
         cudnnSetStream(cudnn_handle, (cudaStream_t)pstream);
     }
 
-    // cudnnTensorDescriptor_t input_desc;
-    // cudnnTensorDescriptor_t output_desc;
-    // cudnnFilterDescriptor_t kernel_desc;
-    // cudnnConvolutionDescriptor_t conv_desc;
-    // cudnnTensorDescriptor_t bias_desc;
-    // setup_descriptor(kernels, paddings, strides, dilations, group, in_shape, weight_shape,
-    //                  bias_shape, out_shape, dtype, layout, input_desc, output_desc, kernel_desc,
-    //                  conv_desc, bias_desc);
-
     size_t space_size_ = (size_t)workspace_size;
     cudnnConvolutionFwdAlgo_t algo_ = (cudnnConvolutionFwdAlgo_t)algo;
 
@@ -238,8 +207,6 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
 
     // conv bias activation
     {
-        // cudnnActivationDescriptor_t activation_desc;
-
         // printf("[conv] algo %d, space size %ld, ptr %p \n\n", (int)algo_, space_size_,
         //        (void*)workspace_ptr);
 

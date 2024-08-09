@@ -1,28 +1,6 @@
 import torch
 import numpy as np
 
-
-# UNDEFINED = cast(DataType, 0)
-#     FLOAT = cast(DataType, 1)
-#     UINT8 = cast(DataType, 2)
-#     INT8 = cast(DataType, 3)
-#     UINT16 = cast(DataType, 4)
-#     INT16 = cast(DataType, 5)
-#     INT32 = cast(DataType, 6)
-#     INT64 = cast(DataType, 7)
-#     STRING = cast(DataType, 8)
-#     BOOL = cast(DataType, 9)
-#     FLOAT16 = cast(DataType, 10)
-#     DOUBLE = cast(DataType, 11)
-#     UINT32 = cast(DataType, 12)
-#     UINT64 = cast(DataType, 13)
-#     COMPLEX64 = cast(DataType, 14)
-#     COMPLEX128 = cast(DataType, 15)
-#     BFLOAT16 = cast(DataType, 16)
-#     FLOAT8E4M3FN = cast(DataType, 17)
-#     FLOAT8E4M3FNUZ = cast(DataType, 18)
-#     FLOAT8E5M2 = cast(DataType, 19)
-#     FLOAT8E5M2FNUZ = cast(DataType, 20)
 def data_type_onnx_to_torch(type):
     if type == 0:
         return None

@@ -593,37 +593,6 @@ class ReshapeNode(Node):
     def infer_layouts(self):
         pass
 
-
-class ResizeNode(Node):
-    def __init__(self):
-        super().__init__()
-        self.params = ResizeParams()
-        self.type = "Resize"
-    
-    def run(self, stream):
-        in_edge = self.all_edges[self.input_names[0]]
-        out_edge = self.all_edges[self.output_names[0]]
-        
-    
-    def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
-        out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
-            out_edge.dtype = "float32"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
-            out_edge.dtype = "float16"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
-        else :
-            print("[Error] resize infer shape not support!!")
-    
-    def infer_layouts(self):
-        pass
-
-
 class SoftmaxNode(Node):
     def __init__(self):
         super().__init__()
