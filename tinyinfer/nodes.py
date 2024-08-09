@@ -473,3 +473,212 @@ class CastNode(Node):
 
     def infer_layouts(self):
         pass
+
+
+class ConcatNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = ConcatParams()
+        self.type = "Concat"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] concat infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+
+class ResizeNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = ResizeParams()
+        self.type = "Resize"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] resize infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+class SliceNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = SliceParams()
+        self.type = "Slice"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] Slice infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+
+class ReshapeNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = ReshapeParams()
+        self.type = "Reshape"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] Reshape infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+
+class ResizeNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = ResizeParams()
+        self.type = "Resize"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] resize infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+
+class SoftmaxNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = SoftmaxParams()
+        self.type = "Softmax"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] Softmax infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass
+
+
+class TransposeNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.params = TransposeParams()
+        self.type = "Transpose"
+    
+    def run(self, stream):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        
+    
+    def infer_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        n,c,h,w = in_edge.shape
+        out_edge = self.all_edges[self.output_names[0]]
+        if self.params.axis == 1 and self.network_precision == "float32" :
+            out_edge.shape = []
+            out_edge.dtype = "float32"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+        elif self.params.axis == 1 and self.network_precision == "float16" :
+            out_edge.shape = []
+            out_edge.dtype = "float16"
+            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+        else :
+            print("[Error] Transpose infer shape not support!!")
+    
+    def infer_layouts(self):
+        pass

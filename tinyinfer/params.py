@@ -43,6 +43,8 @@ class ResizeParams :
         self.cubic_coeff_a = None
         self.mode = None
         self.nearest_mode = None
+        self.exclude_outside = None
+        self.extrapolation_value = None
 
 class ConcatParams :
     def __init__(self):
@@ -54,9 +56,26 @@ class TransposeParams :
 
 class ReshapeParams :
     def __init__(self):
+        self.allowzero = None
         self.shape = None
 
 class CastParams :
     def __init__(self):
         self.in_dtype = "float32"
         self.out_dtype = "float16"
+
+class SplitParams :
+    def __init__(self):
+        self.axis = None
+
+class SoftmaxParams :
+    def __init__(self):
+        self.axis = None
+
+class GatherParams :
+    def __init__(self):
+        self.axis = None
+
+class SliceParams :
+    def __init__(self):
+        self.axis = None

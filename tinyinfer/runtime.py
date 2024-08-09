@@ -118,6 +118,18 @@ def build_network(bin_data, config):
             node.output_names = value["outputs"]
             node.name = value["name"]
             node.type = value["type"]
+        elif value["type"] == "Div":
+            node = ElementwiseNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+        elif value["type"] == "Sub":
+            node = ElementwiseNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
         elif value["type"] == "Mul":
             node = ElementwiseNode()
             node.input_names = value["inputs"]
@@ -142,6 +154,15 @@ def build_network(bin_data, config):
             node.name = value["name"]
             node.type = value["type"]
             params = FlattenParams()
+            params.axis = attrbiute["axis"]
+            node.params = params
+        elif value["type"] == "Concat":
+            node = ConcatNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+            params = ConcatParams()
             params.axis = attrbiute["axis"]
             node.params = params
         elif value["type"] == "MaxPool":
