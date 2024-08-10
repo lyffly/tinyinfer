@@ -5,6 +5,7 @@ import numpy as np
 import torch.nn.functional as F
 from cuda import cudart
 import kernels
+from copy import deepcopy
 
 class Node:
     def __init__(self):
@@ -211,7 +212,7 @@ class ElementwiseNode(Node):
     def __init__(self):
         super().__init__()
         self.params = ElementwiseParams()
-        self.type = "Elementwise"
+        self.type = "Add"
     
     def run(self, stream):
         in_edge0 = self.all_edges[self.input_names[0]]
@@ -226,6 +227,14 @@ class ElementwiseNode(Node):
             # print("****use pytorch elementwise")
             if self.type == "Add":
                 out_edge.tensor = in_edge0.tensor + in_edge1.tensor
+            elif self.type == "Sub":
+                out_edge.tensor = in_edge0.tensor - in_edge1.tensor
+            elif self.type == "Mul":
+                out_edge.tensor = in_edge0.tensor * in_edge1.tensor
+            elif self.type == "Div":
+                out_edge.tensor = in_edge0.tensor / in_edge1.tensor
+            else :
+                raise ModuleNotFoundError
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -484,18 +493,28 @@ class ConcatNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] concat run not impl")
         
     
     def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        in_len = len(self.input_names)
+        axis = self.params.axis
+        
+        in_0_shape = list(self.all_edges[self.input_names[0]].shape)
+        out_edge_shape_tmp = deepcopy(in_0_shape)
+        out_edge_shape_tmp[axis] = 0
+        
+        for i in range(in_len):
+            in_edge_shape = list(self.all_edges[self.input_names[i]].shape)
+            out_edge_shape_tmp[axis] += in_edge_shape[axis]
+                
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        if self.network_precision == "float32" :
+            out_edge.shape = out_edge_shape_tmp
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+        elif self.network_precision == "float16" :
+            out_edge.shape = out_edge_shape_tmp
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :
@@ -514,18 +533,31 @@ class ResizeNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] resize run not impl")
         
     
     def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        in_length = len(self.input_names)
+        if in_length == 3:
+            scale_edge = self.all_edges[self.input_names[2]]
+        elif in_length == 4:
+            scale_edge = self.all_edges[self.input_names[2]]
+            sizes_edge = self.all_edges[self.input_names[3]]
+        else:
+            print("[Error] resize not support ")
+        in_edge_shape = list(self.all_edges[self.input_names[0]].shape)
+        out_edge_shape = deepcopy(in_edge_shape)
+        scale_edge_shape = deepcopy(scale_edge.shape)
+        for i, shape in enumerate(out_edge_shape):
+            out_edge_shape[i] = int(shape * scale_edge.tensor[i])
+        
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        if self.network_precision == "float32" :
+            out_edge.shape = out_edge_shape
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+        elif self.network_precision == "float16" :
+            out_edge.shape = out_edge_shape
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :
@@ -543,18 +575,34 @@ class SliceNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] slice run not impl")
         
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        starts_edges = self.all_edges[self.input_names[1]]
+        ends_edges = self.all_edges[self.input_names[2]]
+        axes_edges = self.all_edges[self.input_names[3]]
+        steps_edges = self.all_edges[self.input_names[4]]
+        out_tmp_shapes = deepcopy(list(in_edge.shape))
+        starts = starts_edges.tensor
+        ends = ends_edges.tensor
+        axes = axes_edges.tensor
+        steps = steps_edges.tensor
+        for i, axis in enumerate(axes):
+            start = starts[i]
+            end = int(ends[i]) if int(ends[i]) < out_tmp_shapes[axis] else out_tmp_shapes[axis]
+            step = steps[i]
+            out_tmp_shapes[axis] = int((end - start + 1) // step)
+        # print(out_tmp_shapes)
+        
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        if self.network_precision == "float32" :
+            out_edge.shape = out_tmp_shapes
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+        elif self.network_precision == "float16" :
+            out_edge.shape = out_tmp_shapes
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :
@@ -573,18 +621,40 @@ class ReshapeNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] reshape run not impl")
         
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        shape_edge = self.all_edges[self.input_names[1]]
+        
+        input_shape = list(in_edge.shape)
+        input_data_length = 1
+        for l in input_shape:
+            input_data_length *= l
+        shape_data = shape_edge.tensor.tolist()
+        output_shape_tmp = deepcopy(shape_data)
+        shape_data_length = 1
+        index = -1
+        index_1_count = 0
+        for i,d in enumerate(shape_data):
+            if d == -1:
+                index = i
+                index_1_count +=1
+            else :
+                shape_data_length *= d
+        
+        assert index_1_count == 1
+        if index_1_count == 1 :
+            output_shape_tmp[index] = input_data_length // shape_data_length
+        
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        if self.network_precision == "float32" :
+            out_edge.shape = output_shape_tmp
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+        elif self.network_precision == "float16" :
+            out_edge.shape = output_shape_tmp
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :
@@ -602,6 +672,7 @@ class SoftmaxNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] softmax run not impl")
         
     
     def infer_shapes(self):
@@ -632,18 +703,25 @@ class TransposeNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
+        print("[Error] transpose run not impl")
         
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        print(self.params.perm)
+        
+        in_edge_shape = in_edge.shape
+        out_edge_shape_tmp = deepcopy(in_edge_shape)
+        for i, shape in enumerate(out_edge_shape_tmp) :
+            out_edge_shape_tmp[i] = in_edge_shape[self.params.perm[i]]
+        
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        if self.network_precision == "float32" :
+            out_edge.shape = out_edge_shape_tmp
             out_edge.dtype = "float32"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+        elif self.network_precision == "float16" :
+            out_edge.shape = out_edge_shape_tmp
             out_edge.dtype = "float16"
             out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
         else :

@@ -183,8 +183,41 @@ def build_network(bin_data, config):
             node.output_names = value["outputs"]
             node.name = value["name"]
             node.type = value["type"]
+        elif value["type"] == "Slice":
+            node = SliceNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+        elif value["type"] == "Resize":
+            node = ResizeNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+            params = ResizeParams()
+            params.coordinate_transformation_mode = attrbiute["coordinate_transformation_mode"]
+            params.cubic_coeff_a = attrbiute["cubic_coeff_a"]
+            params.mode = attrbiute["mode"]
+            params.nearest_mode = attrbiute["nearest_mode"]
+            node.params = params
+        elif value["type"] == "Reshape":
+            node = ReshapeNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+        elif value["type"] == "Transpose":
+            node = TransposeNode()
+            node.input_names = value["inputs"]
+            node.output_names = value["outputs"]
+            node.name = value["name"]
+            node.type = value["type"]
+            params = TransposeParams()
+            params.perm = attrbiute["perm"]
+            node.params = params
         else:
-            print("node type not impl: ", node.type, ", name :", node.name)
+            print("[Error] node type not impl: ", value["type"], ", name :", value["name"])
         network.nodes[node.name] = node
         network.run_orders.append(node.name)
     
@@ -198,7 +231,47 @@ def build_network(bin_data, config):
         edge.is_constant = True
         edge.type = "constant" # constant input output variable
         # edge.tensor = torch.zeros(edge.shape, dtype=torch.float, requires_grad=False)
-        np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float32))
+        np_data = None
+        
+        # FLOAT = 1;   // float
+        # UINT8 = 2;   // uint8_t
+        # INT8 = 3;    // int8_t
+        # UINT16 = 4;  // uint16_t
+        # INT16 = 5;   // int16_t
+        # INT32 = 6;   // int32_t
+        # INT64 = 7;   // int64_t
+        # STRING = 8;  // string
+        # BOOL = 9;    // bool
+        # FLOAT16 = 10;
+        # DOUBLE = 11;
+        # UINT32 = 12;
+        # UINT64 = 13;
+        # COMPLEX64 = 14;     // complex with float32 real and imaginary components
+        # COMPLEX128 = 15;    // complex with float64 real and imaginary components
+        # BFLOAT16 = 16;
+        # FLOAT8E4M3FN = 17;    // float 8, mostly used for coefficients, supports nan, not inf
+        # FLOAT8E4M3FNUZ = 18;  // float 8, mostly used for coefficients, supports nan, not inf, no negative zero
+        # FLOAT8E5M2 = 19;      // follows IEEE 754, supports nan, inf, mostly used for gradients
+        # FLOAT8E5M2FNUZ = 20;  // follows IEEE 754, supports nan, not inf, mostly used for gradients, no negative zero
+        # UINT4 = 21;  // Unsigned integer in range [0, 15]
+        # INT4 = 22;   // Signed integer in range [-8, 7], using two's-complement representation
+        #print(edge.name, edge.shape, tenor_data[edge.name], np_data)
+        if edge.shape==[0] and tenor_data[edge.name] == None :
+            np_data = np.zeros(edge.shape)
+        elif edge.dtype == 1:
+            np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float32))
+        elif edge.dtype == 6:
+            np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.int32))
+        elif edge.dtype == 7:
+            np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.int64))
+        elif edge.dtype == 9:
+            np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.bool))
+        elif edge.dtype == 10:
+            np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float16))
+        else :
+            print("[Error] data type nor impl !!")
+            raise TypeError
+            
         edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
         edge.tensor.requires_grad_(False)
         network.edges[edge.name] = edge
