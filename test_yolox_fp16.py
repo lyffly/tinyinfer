@@ -16,8 +16,8 @@ torch.backends.cudnn.benchmark = True
 
 if __name__ == "__main__":
     tinyinfer.get_gpu_info()
-    img_name = "data/eagle.jpg"
-    img = imagenet_preprocess(img_name)
+    img_name = "data/dog.jpg"
+    img = yolox_preprocess(img_name)
     
     onnx_name = "data/yolox_s.onnx"
     
@@ -30,8 +30,7 @@ if __name__ == "__main__":
     
     model_data = import_model(onnx_name, config)
     network = build_network(model_data, config)
-    # tmp
-    img = torch.zeros([1,3,640,640], dtype=torch.float32, requires_grad=False)
+    # img = torch.zeros([1,3,640,640], dtype=torch.float32, requires_grad=False)
     inputs = {"images" : img}
     network.prepare(inputs)
     # warup
@@ -46,7 +45,7 @@ if __name__ == "__main__":
     end = time.time()
     fps = 10.0/(end - start)
     out_tensor = results["output"].cpu().numpy()
-    out_tensor = softmax(out_tensor, axis=1)
+    
     print("out shape:", out_tensor.shape)
     # print("detect confidence:", np.max(out_tensor[0]))
     # print("max index:", np.argmax(out_tensor[0]))

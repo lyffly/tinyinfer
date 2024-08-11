@@ -20,6 +20,15 @@ def imagenet_preprocess(filename):
     input_batch = input_tensor.unsqueeze(0)
     return input_batch
 
+def yolox_preprocess(filename):
+    img = cv2.imread(filename,1)
+    img = cv2.resize(img, (640, 640), interpolation=cv2.INTER_NEAREST)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = np.transpose(img, (2,0,1))
+    input_batch = np.expand_dims(img, 0)
+    
+    return torch.from_numpy(input_batch)
+
 def read_image(name, hw=(224,224)):
     img = cv2.imread(name,1)
     img = cv2.resize(img, hw, interpolation=cv2.INTER_NEAREST)
