@@ -13,11 +13,16 @@ class SliceNode(Node):
         super().__init__()
         self.params = SliceParams()
         self.type = "Slice"
+        self.starts = []
+        self.axes = []
+        self.steps = []
+        self.ends = []
     
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         print("[Error] slice run not impl")
+        
         
     
     def infer_shapes(self):
@@ -36,6 +41,10 @@ class SliceNode(Node):
             end = int(ends[i]) if int(ends[i]) < out_tmp_shapes[axis] else out_tmp_shapes[axis]
             step = steps[i]
             out_tmp_shapes[axis] = int((end - start + 1) // step)
+            self.starts.append(start)
+            self.axes.append(axis)
+            self.steps.append(step)
+            self.ends.append(end)
         # print(out_tmp_shapes)
         
         out_edge = self.all_edges[self.output_names[0]]

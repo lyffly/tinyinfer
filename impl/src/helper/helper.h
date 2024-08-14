@@ -26,6 +26,36 @@ inline void checkCublasStatus(cublasStatus_t status) {
     }
 }
 
+
+/**
+ * Panic wrapper for unwinding CUTLASS errors
+ */
+#define CUTLASS_CHECK(status)                                                           \
+    {                                                                                   \
+        cutlass::Status error = status;                                                 \
+        if (error != cutlass::Status::kSuccess) {                                       \
+            std::cerr << "[Error] Got cutlass error: " << cutlassGetStatusString(error) \
+                      << " at: " << __LINE__ << std::endl;                              \
+            exit(EXIT_FAILURE);                                                         \
+        }                                                                               \
+    }
+
+
+/**
+ * Panic wrapper for unwinding CUDA runtime errors
+ */
+#define CUDA_CHECK(status)                                                            \
+    {                                                                                 \
+        cudaError_t error = status;                                                   \
+        if (error != cudaSuccess) {                                                   \
+            std::cerr << "[Error] Got bad cuda status: " << cudaGetErrorString(error) \
+                      << " at line: " << __LINE__ << std::endl;                       \
+            exit(EXIT_FAILURE);                                                       \
+        }                                                                             \
+    }
+
+struct GpuTimer;
+
 struct ConvDesc {
     cudnnTensorDescriptor_t input_desc;
     cudnnTensorDescriptor_t output_desc;

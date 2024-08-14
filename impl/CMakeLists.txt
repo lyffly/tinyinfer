@@ -3,6 +3,7 @@ include_directories(${pybind11_INCLUDE_DIR})
 include_directories(${CUDA_INCLUDE_DIR})
 include_directories("/usr/include")
 include_directories("/usr/local/cuda/include")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../3rd/cutlass/include)
 
 # cuda lib build
 file(GLOB SRCS_IMPL ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cu ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp)
