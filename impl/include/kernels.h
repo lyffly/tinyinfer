@@ -82,11 +82,17 @@ bool elementwise_backend(int64_t in_ptr0, int64_t in_ptr1, int64_t out_ptr,
 // gemm
 int64_t get_gemm_workspace_size();
 
-bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
-                  int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
-                  bool transA, bool transB, std::vector<int> in_shape,
-                  std::vector<int> weight_shape, std::vector<int> bias_shape,
-                  std::vector<int> out_shape, std::string dtype, int64_t pstream);
+bool gemm_cublas_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
+                         int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
+                         bool transA, bool transB, std::vector<int> in_shape,
+                         std::vector<int> weight_shape, std::vector<int> bias_shape,
+                         std::vector<int> out_shape, std::string dtype, int64_t pstream);
+
+bool gemm_cutlass_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
+                          int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
+                          bool transA, bool transB, std::vector<int> in_shape,
+                          std::vector<int> weight_shape, std::vector<int> bias_shape,
+                          std::vector<int> out_shape, std::string dtype, int64_t pstream);
 
 //***********************************************************************************************************
 // data type convert

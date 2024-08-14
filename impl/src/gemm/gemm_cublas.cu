@@ -89,11 +89,11 @@ void cublas_gemm_fp32_v1(cublasHandle_t handle, bool trsA, bool trsB, int m, int
     // add bias
 }
 
-bool gemm_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
-                  int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
-                  bool transA, bool transB, std::vector<int> in_shape,
-                  std::vector<int> weight_shape, std::vector<int> bias_shape,
-                  std::vector<int> out_shape, std::string dtype, int64_t pstream) {
+bool gemm_cublas_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
+                         int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
+                         bool transA, bool transB, std::vector<int> in_shape,
+                         std::vector<int> weight_shape, std::vector<int> bias_shape,
+                         std::vector<int> out_shape, std::string dtype, int64_t pstream) {
     cudaStream_t stream = (cudaStream_t)pstream;
     // 2d tensor only, batch gemm todo
     // A=N ; B=N or T

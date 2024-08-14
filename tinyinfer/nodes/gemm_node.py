@@ -32,6 +32,10 @@ class GemmNode(Node):
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
                         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
                         out_edge.shape, self.network_precision, stream)
+                # kernels.gemm_cutlass(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+                #         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
+                #         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
+                #         out_edge.shape, self.network_precision, stream)
             else :
                 kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
