@@ -16,3 +16,6 @@
 [submodule "3rd/TNN"]
 	path = 3rd/TNN
 	url = https://gitee.com/yunfeiliu/TNN
+[submodule "3rd/ppq"]
+	path = 3rd/ppq
+	url = https://gitee.com/yunfeiliu/ppq

@@ -63,3 +63,4 @@ python3 test_resnet18_fp16.py
 7、<https://github.com/triton-lang/triton>  
 8、<https://github.com/NVIDIA/cutlass>  
 9、<https://github.com/NVIDIA/TensorRT>  
+10、<https://github.com/OpenPPL/ppq>  
