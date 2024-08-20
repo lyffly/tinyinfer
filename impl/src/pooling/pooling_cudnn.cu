@@ -1,4 +1,4 @@
-#include <cudnn_ops_infer.h>
+#include <cudnn_v9.h>
 #include <iostream>
 #include "../../include/kernels.h"
 #include "cublasLt.h"
@@ -74,7 +74,7 @@ void setup_pooling_descriptor(std::vector<int>& kernels, std::vector<int>& paddi
 }
 
 
-bool pooling_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
+bool pooling_cudnn_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
                      std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
                      std::vector<int> out_shape, std::string optype, std::string dtype,
                      std::string layout, int64_t pstream, void* desc) {
