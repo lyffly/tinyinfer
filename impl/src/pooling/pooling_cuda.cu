@@ -17,7 +17,7 @@
 __device__ inline float numerical_min(float a){
     return -1000.f;
 }
-__device__ inline float numerical_min(__half a){
+__device__ inline __half numerical_min(__half a){
     return __float2half(-1000.f);
 }
 

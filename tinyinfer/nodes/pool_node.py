@@ -24,25 +24,16 @@ class PoolNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
             n,c,h,w = in_edge.tensor.shape
-            # (int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
-            #          std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
-            #          std::vector<int> out_shape, std::string optype, std::string dtype,
-            #          std::string layout, int64_t pstream, void* desc)
-            try:
+            if True:
                 #print("****use cudnn GlobalAveragePool")
                 kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
                                 self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
                                 self.network_precision, "nchw", stream, self.desc)
-            except:
-                out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
+            # except:
+            #     out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
             
         elif self.type == "MaxPool":
             if True:
-                print("****use cudnn MaxPool")
-                # print(in_edge.tensor)
-                print(in_edge.tensor.shape)
-                print(out_edge.tensor.shape)
-                print(self.type)
                 kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
                                 self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
                                 self.network_precision, "nchw", stream, self.desc)
@@ -91,15 +82,6 @@ class PoolNode(Node):
                               self.params.strides, in_edge.shape,
                               out_edge.shape, self.type, self.network_precision,
                               "nchw", self.desc)
-
-        print(self.params.kernel_shape)
-        print(self.params.pads)
-        print(self.params.strides)
-        print(in_edge.shape)
-        print(out_edge.shape)
-        print(self.type)
-        print(self.network_precision)
-        print(self.desc)
 
     def infer_layouts(self):
         pass
