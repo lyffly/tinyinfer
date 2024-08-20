@@ -80,11 +80,11 @@ class Network():
         # move edge data to gpu
         for key in self.edges.keys():
             if self.edges[key].type == "input" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+                self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.edges[key].type == "output" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+                self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+                self.edges[key].tensor = self.edges[key].tensor.cuda()
 
 
     def run(self, ins = {}):

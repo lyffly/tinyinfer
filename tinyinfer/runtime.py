@@ -8,6 +8,8 @@ from .edges import *
 from .params import *
 from .network import *
 from .onnx_to_bin import convert_to_bin
+from kernels import YTensor, DataType, DataLayout, Dims
+from .utils import get_np_data_ptr
 
 # bytes_to_int
 def bytes_to_int(bytes) :
@@ -21,6 +23,35 @@ def bytes_to_str(bytes):
 def str_to_bytes(str):
     return bytes(str, 'utf-8')
 
+        # FLOAT = 1;   // float
+        # UINT8 = 2;   // uint8_t
+        # INT8 = 3;    // int8_t
+        # UINT16 = 4;  // uint16_t
+        # INT16 = 5;   // int16_t
+        # INT32 = 6;   // int32_t
+        # INT64 = 7;   // int64_t
+        # STRING = 8;  // string
+        # BOOL = 9;    // bool
+        # FLOAT16 = 10;
+        # DOUBLE = 11;
+        # UINT32 = 12;
+        # UINT64 = 13;
+def dtype_2_tensor_dtype(datatype):
+    if datatype == 1:
+        return DataType.float32
+    elif datatype == 10:
+        return DataType.float16
+    elif datatype == 9:
+        return DataType.bool
+    elif datatype == 6:
+        return DataType.int32
+    elif datatype == 7:
+        return DataType.int64
+    elif datatype == 3:
+        return DataType.int8
+    else:
+        print("[Error] datatyoe convert wrong: ", datatype)
+        return None
 
 # read int from file
 def file_read_int(f, num=8):
@@ -271,7 +302,10 @@ def build_network(bin_data, config):
         else :
             print("[Error] data type nor impl !!")
             raise TypeError
-            
+        # edge.tensor = YTensor()
+        # edge.tensor.zeros(edge.shape, dtype_2_tensor_dtype(edge.dtype), DataLayout.nchw)
+        # # todo
+        # edge.tensor.copy_numpy_data(get_np_data_ptr(np_data))
         edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
         edge.tensor.requires_grad_(False)
         network.edges[edge.name] = edge

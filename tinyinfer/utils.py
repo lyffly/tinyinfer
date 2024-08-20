@@ -27,7 +27,9 @@ def data_type_onnx_to_torch(type):
     else :
         print("[Error] unknown type : ", type)
         raise TypeError
-    
+
+def get_np_data_ptr(npdata):
+    return npdata.__array_interface__['data'][0]
     
 def data_type_onnx_to_np(type):
     if type == 0:

@@ -37,14 +37,18 @@ class PoolNode(Node):
                 out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
             
         elif self.type == "MaxPool":
-            try:
-                #print("****use cudnn MaxPool")
+            if True:
+                print("****use cudnn MaxPool")
+                # print(in_edge.tensor)
+                print(in_edge.tensor.shape)
+                print(out_edge.tensor.shape)
+                print(self.type)
                 kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
                                 self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
                                 self.network_precision, "nchw", stream, self.desc)
-            except:
-                out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
-                                        stride=self.params.strides,padding=self.params.pads[:2])
+            # except:
+            #     out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
+            #                             stride=self.params.strides,padding=self.params.pads[:2])
 
 
     def infer_shapes(self):
@@ -87,6 +91,15 @@ class PoolNode(Node):
                               self.params.strides, in_edge.shape,
                               out_edge.shape, self.type, self.network_precision,
                               "nchw", self.desc)
+
+        print(self.params.kernel_shape)
+        print(self.params.pads)
+        print(self.params.strides)
+        print(in_edge.shape)
+        print(out_edge.shape)
+        print(self.type)
+        print(self.network_precision)
+        print(self.desc)
 
     def infer_layouts(self):
         pass

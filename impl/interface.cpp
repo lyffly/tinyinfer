@@ -18,13 +18,13 @@ PYBIND11_MODULE(kernels, m) {
     m.def("datatype_convert", &datatype_convert_backend);
     m.def("conv2d", &conv2d_backend);
     m.def("create_conv2d_desc", &create_conv2d_desc);
-    m.def("get_conv2d_algo", &get_conv2d_algo);
     m.def("get_conv2d_workspace_size", &get_conv2d_workspace_size);
+    m.def("get_conv2d_algo", &get_conv2d_algo);
     m.def("layout_convert", &layout_convert_backend);
     m.def("create_handle", &create_handle);
     m.def("create_pooling_desc", &create_pooling_desc);
     m.def("setup_pooling_descriptor", &setup_pooling_descriptor);
-    m.def("pooling", &pooling_backend);
+    m.def("pooling", &pooling_cudnn_backend);
 
     py::enum_<DataType>(m, "DataType")
         .value("int8", DataType::INT8)
@@ -48,13 +48,16 @@ PYBIND11_MODULE(kernels, m) {
 
     py::class_<YTensor>(m, "YTensor")
         .def(py::init())
-        .def_property("data_ptr", &YTensor::GetDataPtr, &YTensor::SetDataPtr)
         .def_property("shape", &YTensor::GetShape, &YTensor::SetShape)
         .def("malloc", &YTensor::Malloc)
         .def("free", &YTensor::Free)
+        .def("copy_numpy_data", &YTensor::CopyNumpyData)
         .def("zeros", &YTensor::Zeros)
+        .def("data_ptr", &YTensor::GetDataPtr)
+        .def("set_data_ptr", &YTensor::SetDataPtr)
         .def("float", &YTensor::Float)
         .def("half", &YTensor::Half)
         .def("cuda", &YTensor::CUDA)
         .def("cpu", &YTensor::CPU);
+        
 }

@@ -28,6 +28,8 @@
 - [ ] stablehlo,使用mlir生成cubin然后调用
 
 #### 编译
+cuda version: 12.4  
+cudnn version: 9.1  
 
 ```shell
 git clone https://github.com/lyffly/tinyinfer

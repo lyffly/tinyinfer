@@ -1,11 +1,13 @@
 #pragma once
-#include <cudnn_ops_infer.h>
+#include <cudnn_v9.h>
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
 #include "math.h"
 #include "stdio.h"
+
+using namespace std;
 
 class Dims {
    public:
@@ -44,17 +46,18 @@ class YTensor {
    public:
     YTensor();
     ~YTensor();
-    bool Malloc(Dims dims, DataType dtype, DataLayout layout);
+    bool Malloc(std::vector<int> shape, DataType dtype, DataLayout layout);
     bool Free();
-    bool Zeros(Dims dims, DataType dtype, DataLayout layout);
+    bool Zeros(std::vector<int> shape, DataType dtype, DataLayout layout);
     bool Float();
     bool Half();
     bool CUDA();
     bool CPU();
+    bool CopyNumpyData(int64_t ptr);
     int64_t GetDataPtr();
     void SetDataPtr(int64_t ptr);
     std::vector<int> GetShape();
-    void SetShape(std::vector<int> dims);
+    void SetShape(std::vector<int> shape);
 
    private:
     void* cpu_ptr;
@@ -105,12 +108,6 @@ bool datatype_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> 
 // conv2d
 void* create_conv2d_desc();
 
-int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
-                        std::vector<int> strides, std::vector<int> dilations, int group,
-                        std::vector<int> in_shape, std::vector<int> weight_shape,
-                        std::vector<int> bias_shape, std::vector<int> out_shape, std::string dtype,
-                        std::string layout, int64_t pstream, void* desc);
-
 int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> paddings,
                                   std::vector<int> strides, std::vector<int> dilations, int group,
                                   std::vector<int> in_shape, std::vector<int> weight_shape,
@@ -126,6 +123,23 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
                     std::vector<int> out_shape, std::string dtype, std::string layout,
                     int64_t pstream, void* desc);
 
+int64_t get_conv2d_algo(std::vector<int> kernels, std::vector<int> paddings,
+                        std::vector<int> strides, std::vector<int> dilations, int group,
+                        std::vector<int> in_shape, std::vector<int> weight_shape,
+                        std::vector<int> bias_shape, std::vector<int> out_shape, std::string dtype,
+                        std::string layout, int64_t pstream, void* desc);
+
+// int64_t get_conv2d_workspace_size(std::vector<int> kernels, std::vector<int> paddings,
+//                                   std::vector<int> strides, std::vector<int> dilations, int group,
+//                                   std::vector<int> in_shape, std::vector<int> weight_shape,
+//                                   std::vector<int> bias_shape, std::vector<int> out_shape,
+//                                   std::string dtype, std::string layout, int64_t algo,
+//                                   int64_t pstream, void* desc);
+
+// bool conv2d_cudnn_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
+//                     int64_t workspace_ptr, std::string dtype, std::string layout,
+//                     int64_t pstream, void* desc);
+
 //***********************************************************************************************************
 // pooling
 void* create_pooling_desc();
@@ -135,11 +149,15 @@ void setup_pooling_descriptor(std::vector<int>& kernels, std::vector<int>& paddi
                               std::vector<int>& out_shape, std::string optype, std::string dtype,
                               std::string layout, void* desc);
 
-bool pooling_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
+bool pooling_cudnn_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
                      std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
                      std::vector<int> out_shape, std::string optype, std::string dtype,
                      std::string layout, int64_t pstream, void* desc);
 
+bool pooling_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
+                     std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
+                     std::vector<int> out_shape, std::string optype, std::string dtype,
+                     std::string layout, int64_t pstream, void* desc);
 
 //***********************************************************************************************************
 // convert data layout

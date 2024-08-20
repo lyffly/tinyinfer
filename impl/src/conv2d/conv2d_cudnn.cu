@@ -1,4 +1,4 @@
-#include <cudnn_ops_infer.h>
+#include <cudnn_v9.h>
 #include <iostream>
 #include "../../include/kernels.h"
 #include "cublasLt.h"

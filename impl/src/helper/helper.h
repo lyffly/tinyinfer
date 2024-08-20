@@ -63,6 +63,11 @@ struct ConvDesc {
     cudnnConvolutionDescriptor_t conv_desc;
     cudnnTensorDescriptor_t bias_desc;
     cudnnActivationDescriptor_t activation_desc;
+    cudnnConvolutionFwdAlgo_t algo;
+    size_t workspace_size;
+    void* workspace_ptr;
+    cudnnHandle_t cudnn_handle;
+    cudaStream_t cuda_stream;
 };
 
 struct PoolDesc {

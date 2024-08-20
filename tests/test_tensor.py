@@ -7,7 +7,7 @@ def test_tensor():
     dims.nb_dims = 4
     
     tensor = YTensor()
-    tensor.zeros(dims, DataType.float32, DataLayout.nchw)
+    tensor.zeros(dims.shape, DataType.float32, DataLayout.nchw)
     tensor.cuda()
     print("gpu ptr: ", tensor.data_ptr)
     tensor.cpu()
