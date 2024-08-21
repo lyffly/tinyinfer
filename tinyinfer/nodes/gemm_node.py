@@ -24,10 +24,16 @@ class GemmNode(Node):
         if len(self.input_names) > 2:
             bias_edge = self.all_edges[self.input_names[2]]
         
-        try: # use cuda cublas
+        if True: # use cuda cublas
             if self.workspace_size : 
                 _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
-            if bias_edge:
+            if bias_edge and in_edge.shape[0] == 1:
+                kernels.gemv(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
+                        self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
+                        self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
+                        out_edge.shape, self.network_precision, stream)
+            
+            elif bias_edge and in_edge.shape[0] > 1:    
                 kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
                         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
@@ -36,18 +42,22 @@ class GemmNode(Node):
                 #         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
                 #         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
                 #         out_edge.shape, self.network_precision, stream)
+            elif in_edge.shape[0] == 1:
+                kernels.gemv(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
+                        self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
+                        self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, [], out_edge.shape, 
+                        self.network_precision, stream)
             else :
                 kernels.gemm(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), 0, out_edge.tensor.data_ptr(),
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 
                         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, [], out_edge.shape, 
                         self.network_precision, stream)
-            # print("****use cublas gemm\n")
-        except: # use torch
-            if self.params.transB:
-                out_edge.tensor = torch.matmul(in_edge.tensor, w_edge.tensor.T)
-            else:
-                out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
-            # print("****use pytorch gemm\n")
+        # except: # use torch
+        #     if self.params.transB:
+        #         out_edge.tensor = torch.matmul(in_edge.tensor, w_edge.tensor.T)
+        #     else:
+        #         out_edge.tensor = torch.matmul(in_edge.tensor, w_edge)
+        #     # print("****use pytorch gemm\n")
     
     def __del__(self):
         if self.workspace_ptr:

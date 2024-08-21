@@ -14,6 +14,7 @@ PYBIND11_MODULE(kernels, m) {
     m.def("elementwise", &elementwise_backend);
     m.def("activation", &activation_backend);
     m.def("gemm", &gemm_cublas_backend);
+    m.def("gemv", &gemv_cuda_backend);
     m.def("gemm_cutlass", &gemm_cutlass_backend);
     m.def("datatype_convert", &datatype_convert_backend);
     m.def("conv2d", &conv2d_backend);
