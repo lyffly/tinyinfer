@@ -9,7 +9,6 @@
 #include "cuda_fp16.h"
 #include "cuda_runtime.h"
 
-#define WARP_SIZE 32
 #define WARPS_PER_BLOCK 4
 #define THREADS_PER_BLOCK 128  // WARP_SIZE * WARPS_PER_BLOCK
 
@@ -17,19 +16,7 @@ __forceinline__ __device__ __host__ size_t div_ceil(size_t a, size_t b) {
     return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
-__device__ __forceinline__ float warpReduceSum(float sum, unsigned int threadNum) {
-    if (threadNum >= 32)
-        sum += __shfl_down_sync(0xffffffff, sum, 16);  // 0-16, 1-17, 2-18, etc.
-    if (threadNum >= 16)
-        sum += __shfl_down_sync(0xffffffff, sum, 8);  // 0-8, 1-9, 2-10, etc.
-    if (threadNum >= 8)
-        sum += __shfl_down_sync(0xffffffff, sum, 4);  // 0-4, 1-5, 2-6, etc.
-    if (threadNum >= 4)
-        sum += __shfl_down_sync(0xffffffff, sum, 2);  // 0-2, 1-3, 4-6, 5-7, etc.
-    if (threadNum >= 2)
-        sum += __shfl_down_sync(0xffffffff, sum, 1);  // 0-1, 2-3, 4-5, etc.
-    return sum;
-}
+
 
 // modify from https://github.com/Bruce-Lee-LY/cuda_hgemv/blob/master/src/warp/warp1_naive.cu
 // m=1  1*K @ K*N = 1*N
@@ -53,7 +40,7 @@ __global__ void gemv_nt_normal_kernel(const T* A, const T* B, T* C, const float*
         tmp += float(A[A_idx]) * float(B[B_idx]);
     }
 
-    tmp = warpReduceSum(tmp, WARP_SIZE);
+    tmp = warp_reduce_sum(tmp);
 
     if (lane_id == 0 && bias) {
         C[warp_col] = T(alpha * tmp + beta * bias[warp_col]);

@@ -81,3 +81,14 @@ struct Handles {
     cudaStream_t cuda_stream;
     cublasHandle_t cublas_handle;
 };
+
+#define WARP_SIZE 32
+
+
+__device__ __forceinline__ float warp_reduce_sum(float x) {
+#pragma unroll
+    for (int mask = 16; mask > 0; mask >>= 1) {
+        x += __shfl_xor_sync(0xffffffff, x, mask, 32);
+    }
+    return x;
+}

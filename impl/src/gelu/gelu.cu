@@ -1,4 +1,3 @@
-#include <complex>
 #include <cstdio>
 #include <iostream>
 #include <sstream>
@@ -17,7 +16,7 @@ template<typename T>
 __global__ void gelu_forward_kernel1(const T* inp, T* out, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N) {
-        float xi = T(inp[i]);
+        float xi = float(inp[i]);
         float cube = 0.044715f * xi * xi * xi;
         out[i] = T(0.5f * xi * (1.0f + tanhf(GELU_SCALING_FACTOR * (xi + cube))));
     }
