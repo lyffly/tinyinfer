@@ -9,13 +9,8 @@
 
 using namespace std;
 
-class Dims {
-   public:
-    int nb_dims;
-    std::vector<int> shapes;
-};
-
 enum class DataType {
+    UNDEFINE = 0,
     INT8 = 1,
     HALF = 2,
     FLOAT16 = 2,
@@ -26,17 +21,28 @@ enum class DataType {
 };
 
 enum class DataLayout {
+    UNDEFINE = 0,
     NCHW = 1,
     NHWC = 2,
 };
 
+enum class TensorType {
+    UNDEFINE = 0,
+    CONSTANT = 1,
+    VARIABLE = 2,
+    INPUT = 3,
+    OUTPUT = 4,
+};
+
 class YTensor {
    public:
-    int nb_dims;
+    int rank;
     std::vector<int> shape;
+    std::vector<int> stride;
     void* data;
     bool is_gpu;
-    DataType dtype;
+    TensorType tensor_type;
+    DataType data_type;
     DataLayout layout;
     size_t length;
     int sizeoftype;
@@ -55,9 +61,12 @@ class YTensor {
     bool CPU();
     bool CopyNumpyData(int64_t ptr);
     int64_t GetDataPtr();
-    void SetDataPtr(int64_t ptr);
+    void SetDataPtr(int64_t ptr, bool is_gpu);
     std::vector<int> GetShape();
     void SetShape(std::vector<int> shape);
+    bool GetIsGPU();
+    void SetIsGPU(bool is_gpu);
+
 
    private:
     void* cpu_ptr;

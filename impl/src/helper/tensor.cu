@@ -10,14 +10,14 @@
 #include "math.h"
 #include "stdio.h"
 
-int GetSizeofDtype(DataType dtype) {
-    if (dtype == DataType::INT32 || dtype == DataType::FLOAT32) {
+int GetSizeofDtype(DataType data_type) {
+    if (data_type == DataType::INT32 || data_type == DataType::FLOAT32) {
         return 4;
-    } else if (dtype == DataType::FLOAT16 || dtype == DataType::HALF) {
+    } else if (data_type == DataType::FLOAT16 || data_type == DataType::HALF) {
         return 2;
-    } else if (dtype == DataType::INT64) {
+    } else if (data_type == DataType::INT64) {
         return 8;
-    } else if (dtype == DataType::INT8 || dtype == DataType::BOOL) {
+    } else if (data_type == DataType::INT8 || data_type == DataType::BOOL) {
         return 1;
     }
     return 1;
@@ -52,8 +52,8 @@ YTensor::~YTensor() {
     Free();
 }
 
-bool YTensor::Malloc(std::vector<int> shape, DataType dtype, DataLayout layout) {
-    this->Zeros(shape, dtype, layout);
+bool YTensor::Malloc(std::vector<int> shape, DataType data_type, DataLayout layout) {
+    this->Zeros(shape, data_type, layout);
     return true;
 }
 
@@ -70,8 +70,8 @@ bool YTensor::Free() {
     return true;
 }
 
-bool YTensor::Zeros(std::vector<int> shape, DataType dtype, DataLayout layout) {
-    this->sizeoftype = GetSizeofDtype(dtype);
+bool YTensor::Zeros(std::vector<int> shape, DataType data_type, DataLayout layout) {
+    this->sizeoftype = GetSizeofDtype(data_type);
     this->length = GetProdofVector(shape);
     this->cpu_ptr = malloc(this->sizeoftype * this->length);
     if (not this->cpu_ptr) {
@@ -80,9 +80,9 @@ bool YTensor::Zeros(std::vector<int> shape, DataType dtype, DataLayout layout) {
     memset(this->cpu_ptr, 0, this->sizeoftype * this->length);
     this->data = cpu_ptr;
     this->gpu_ptr = nullptr;
-    this->nb_dims = shape.size();
+    this->rank = shape.size();
     this->shape = shape;
-    this->dtype = dtype;
+    this->data_type = data_type;
     this->layout = layout;
     this->is_gpu = false;
     return true;
@@ -93,8 +93,8 @@ bool YTensor::Float() {
         printf("[Error] data not on gpu !!\n");
         return false;
     }
-    if (this->dtype == DataType::HALF) {
-        this->dtype = DataType::HALF;
+    if (this->data_type == DataType::HALF) {
+        this->data_type = DataType::HALF;
         this->sizeoftype = sizeof(float);
         int block_size = 512;
         int grid_size = (this->length + block_size - 1) / block_size;
@@ -106,7 +106,7 @@ bool YTensor::Float() {
                                                              this->length);
         this->data = this->gpu_ptr;
         cudaFree(tmp);
-    } else if (this->dtype == DataType::FLOAT32) {
+    } else if (this->data_type == DataType::FLOAT32) {
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -120,8 +120,8 @@ bool YTensor::Half() {
         printf("[Error] data not on gpu !!\n");
         return false;
     }
-    if (this->dtype == DataType::FLOAT32) {
-        this->dtype = DataType::FLOAT32;
+    if (this->data_type == DataType::FLOAT32) {
+        this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(half);
         int block_size = 512;
         int grid_size = (this->length + block_size - 1) / block_size;
@@ -133,7 +133,7 @@ bool YTensor::Half() {
                                                              this->length);
         this->data = this->gpu_ptr;
         cudaFree(tmp);
-    } else if (this->dtype == DataType::HALF) {
+    } else if (this->data_type == DataType::HALF) {
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -173,7 +173,8 @@ bool YTensor::CopyNumpyData(int64_t ptr) {
     return true;
 }
 
-void YTensor::SetDataPtr(int64_t ptr) {
+void YTensor::SetDataPtr(int64_t ptr, bool is_gpu) {
+    this->is_gpu = is_gpu;
     if (this->is_gpu) {
         this->data = (void*)ptr;
         this->gpu_ptr = (void*)ptr;
@@ -188,10 +189,20 @@ int64_t YTensor::GetDataPtr() {
 }
 
 void YTensor::SetShape(std::vector<int> shape) {
-    this->nb_dims = shape.size();
+    this->rank = shape.size();
     this->shape = shape;
 }
 
 std::vector<int> YTensor::GetShape() {
     return this->shape;
+}
+
+bool YTensor::GetIsGPU() {
+    return this->is_gpu;
+}
+
+void YTensor::SetIsGPU(bool is_gpu) {
+    if ((!this->is_gpu) && is_gpu) {
+        this->CUDA();
+    }
 }

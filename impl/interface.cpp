@@ -32,6 +32,7 @@ PYBIND11_MODULE(kernels, m) {
 
 
     py::enum_<DataType>(m, "DataType")
+        .value("undefine", DataType::UNDEFINE)
         .value("int8", DataType::INT8)
         .value("half", DataType::HALF)
         .value("float16", DataType::FLOAT16)
@@ -42,18 +43,23 @@ PYBIND11_MODULE(kernels, m) {
         .export_values();
 
     py::enum_<DataLayout>(m, "DataLayout")
+        .value("undefine", DataLayout::UNDEFINE)
         .value("nchw", DataLayout::NCHW)
         .value("nhwc", DataLayout::NHWC)
         .export_values();
-
-    py::class_<Dims>(m, "Dims")
-        .def(py::init())
-        .def_readwrite("nb_dims", &Dims::nb_dims)
-        .def_readwrite("shape", &Dims::shapes);
+    
+    py::enum_<TensorType>(m, "TensorType")
+        .value("undefine", TensorType::UNDEFINE)
+        .value("constant", TensorType::CONSTANT)
+        .value("variable", TensorType::VARIABLE)
+        .value("input", TensorType::INPUT)
+        .value("output", TensorType::OUTPUT)
+        .export_values();
 
     py::class_<YTensor>(m, "YTensor")
         .def(py::init())
         .def_property("shape", &YTensor::GetShape, &YTensor::SetShape)
+        .def_property("is_gpu", &YTensor::GetIsGPU, &YTensor::SetIsGPU)
         .def("malloc", &YTensor::Malloc)
         .def("free", &YTensor::Free)
         .def("copy_numpy_data", &YTensor::CopyNumpyData)
