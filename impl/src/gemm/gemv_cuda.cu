@@ -12,10 +12,6 @@
 #define WARPS_PER_BLOCK 4
 #define THREADS_PER_BLOCK 128  // WARP_SIZE * WARPS_PER_BLOCK
 
-__forceinline__ __device__ __host__ size_t div_ceil(size_t a, size_t b) {
-    return (a % b != 0) ? (a / b + 1) : (a / b);
-}
-
 
 
 // modify from https://github.com/Bruce-Lee-LY/cuda_hgemv/blob/master/src/warp/warp1_naive.cu

@@ -177,6 +177,13 @@ bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shap
         std::string dtype, std::string layout, int64_t pstream);
 
 //***********************************************************************************************************
+// rms norm
+bool rms_norm_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+                         std::vector<int> out_shape, float eps, std::string dtype, int64_t pstream);
 
 
+//***********************************************************************************************************
+// silu
+bool silu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape,
+        std::string dtype, std::string layout, int64_t pstream);
 

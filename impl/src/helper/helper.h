@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdio>
 #include <functional>
 #include <stdexcept>
@@ -82,8 +83,7 @@ struct Handles {
     cublasHandle_t cublas_handle;
 };
 
-#define WARP_SIZE 32
-
+const size_t WARP_SIZE=32;
 
 __device__ __forceinline__ float warp_reduce_sum(float x) {
 #pragma unroll
@@ -91,4 +91,12 @@ __device__ __forceinline__ float warp_reduce_sum(float x) {
         x += __shfl_xor_sync(0xffffffff, x, mask, 32);
     }
     return x;
+}
+
+__forceinline__ __device__ __host__ size_t div_ceil(size_t a, size_t b) {
+    return (a % b != 0) ? (a / b + 1) : (a / b);
+}
+
+__forceinline__ __device__ __host__ int div_ceil(int a, int b) {
+    return (a % b != 0) ? (a / b + 1) : (a / b);
 }

@@ -67,22 +67,23 @@ void rms_norm_fp16_cuda(const half * x, half * dst, const int ncols, const int n
 }
 
 
-// void ggml_cuda_op_rms_norm(ggml_backend_cuda_context & ctx, ggml_tensor * dst) {
-//     const ggml_tensor * src0 = dst->src[0];
-//     const float * src0_d = (const float *)src0->data;
-//     float * dst_d = (float *)dst->data;
-//     cudaStream_t stream = ctx.stream();
+bool rms_norm_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+                         std::vector<int> out_shape, float eps, std::string dtype, int64_t pstream) {
+    cudaStream_t stream = (cudaStream_t)pstream;
+    int batch = in_shape.at(0);
+    size_t length = 1;
+    for (auto& shape : in_shape) {
+        length *= shape;
+    }
+    int nrows = length / batch;
 
-//     GGML_ASSERT(ggml_is_contiguous(src0));
-
-//     GGML_ASSERT(src0->type == GGML_TYPE_F32);
-//     GGML_ASSERT( dst->type == GGML_TYPE_F32);
-
-//     const int64_t ne00 = src0->ne[0];
-//     const int64_t nrows = ggml_nrows(src0);
-
-//     float eps=1e-10;
-
-//     rms_norm_f32_cuda(src0_d, dst_d, ne00, nrows, eps, stream);
-// }
+    if ( dtype=="float32" ) {
+        rms_norm_fp32_cuda((float*)in_ptr,  (float*)out_ptr,  batch, nrows,  eps,  stream);
+    } else if ( dtype=="float16" ) {
+        rms_norm_fp16_cuda((half*)in_ptr, (half*)out_ptr,  batch, nrows,  eps,  stream);
+    } else {
+        printf("rms norm not support !!! \n");
+    }
+    return true;
+}
 

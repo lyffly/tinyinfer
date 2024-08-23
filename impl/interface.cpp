@@ -27,6 +27,9 @@ PYBIND11_MODULE(kernels, m) {
     m.def("setup_pooling_descriptor", &setup_pooling_descriptor);
     m.def("pooling", &pooling_cudnn_backend);
     m.def("gelu", &gelu_cuda_backend);
+    m.def("silu", &silu_cuda_backend);
+    m.def("rms_norm", &rms_norm_cuda_backend);
+
 
     py::enum_<DataType>(m, "DataType")
         .value("int8", DataType::INT8)
