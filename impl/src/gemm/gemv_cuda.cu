@@ -64,9 +64,9 @@ bool gemv_cuda_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int
     dim3 block(THREADS_PER_BLOCK);
     dim3 grid(div_ceil(n, WARPS_PER_BLOCK));
     if (m == 1 && dtype=="float32" && transB) {
-        gemv_nt_normal_kernel<float><<<grid, block>>>((float*)in_ptr, (float*)weight_ptr, (float*)out_ptr, (float*)bias_ptr, alpha, beta, n, k);
+        gemv_nt_normal_kernel<float><<<grid, block, 0, stream>>>((float*)in_ptr, (float*)weight_ptr, (float*)out_ptr, (float*)bias_ptr, alpha, beta, n, k);
     } else if (m == 1 && dtype=="float16" && transB) {
-        gemv_nt_normal_kernel<half><<<grid, block>>>((half*)in_ptr, (half*)weight_ptr, (half*)out_ptr, (float*)bias_ptr, alpha, beta, n, k);
+        gemv_nt_normal_kernel<half><<<grid, block, 0, stream>>>((half*)in_ptr, (half*)weight_ptr, (half*)out_ptr, (float*)bias_ptr, alpha, beta, n, k);
     } else {
         printf("Gemv not support !!! \n");
     }

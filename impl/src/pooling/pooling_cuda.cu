@@ -84,7 +84,7 @@ bool pooling_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kern
                      std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
                      std::vector<int> out_shape, std::string optype, std::string dtype,
                      std::string layout, int64_t pstream, void* desc) {
-    PoolDesc* desc_ = (PoolDesc*)desc;
+    // PoolDesc* desc_ = (PoolDesc*)desc;
 
     if(optype == "MaxPool"){
         int batch = in_shape.at(0);

@@ -10,7 +10,7 @@
 #include "math.h"
 #include "stdio.h"
 
-int GetSizeofDtype(DataType data_type) {
+int64_t GetSizeofDtype(DataType data_type) {
     if (data_type == DataType::INT64) {
         return 8;
     } else if (data_type == DataType::INT32 || data_type == DataType::FLOAT32) {
@@ -23,7 +23,7 @@ int GetSizeofDtype(DataType data_type) {
     return 1;
 }
 
-size_t GetProdofVector(std::vector<int> shapes) {
+int64_t GetProdofVector(std::vector<int64_t> shapes) {
     size_t sum = 1;
     for (auto& shape : shapes) {
         sum *= shape;
@@ -52,7 +52,7 @@ YTensor::~YTensor() {
     Free();
 }
 
-bool YTensor::Malloc(std::vector<int> shape, DataType data_type, DataLayout layout) {
+bool YTensor::Malloc(std::vector<int64_t> shape, DataType data_type, DataLayout layout) {
     this->Zeros(shape, data_type, layout);
     return true;
 }
@@ -70,7 +70,7 @@ bool YTensor::Free() {
     return true;
 }
 
-bool YTensor::Zeros(std::vector<int> shape, DataType data_type, DataLayout layout) {
+bool YTensor::Zeros(std::vector<int64_t> shape, DataType data_type, DataLayout layout) {
     this->sizeoftype = GetSizeofDtype(data_type);
     this->length = GetProdofVector(shape);
     this->cpu_ptr = malloc(this->sizeoftype * this->length);
@@ -188,12 +188,12 @@ int64_t YTensor::GetDataPtr() {
     return (int64_t)(this->data);
 }
 
-void YTensor::SetShape(std::vector<int> shape) {
+void YTensor::SetShape(std::vector<int64_t> shape) {
     this->rank = shape.size();
     this->shape = shape;
 }
 
-std::vector<int> YTensor::GetShape() {
+std::vector<int64_t> YTensor::GetShape() {
     return this->shape;
 }
 
@@ -221,7 +221,7 @@ DataLayout YTensor::GetDataLayout() {
 }
 
 void YTensor::SetDataLayout(DataLayout layout) {
-    return this->layout = layout;
+    this->layout = layout;
 }
 
 TensorType YTensor::GetTensorType() {
@@ -230,4 +230,12 @@ TensorType YTensor::GetTensorType() {
 
 void YTensor::SetTensorType(TensorType type) {
     this->tensor_type = type;
+}
+
+int64_t YTensor::GetRank() {
+    return this->rank;
+}
+
+void YTensor::SetRank(int64_t rank) {
+    this->rank = rank;
 }

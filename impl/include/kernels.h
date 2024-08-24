@@ -36,25 +36,25 @@ enum class TensorType {
 
 class YTensor {
    public:
-    int rank;
-    std::vector<int> shape;
-    std::vector<int> stride;
+    int64_t rank;
+    std::vector<int64_t> shape;
+    std::vector<int64_t> stride;
     void* data;
     bool is_gpu;
     TensorType tensor_type;
     DataType data_type;
     DataLayout layout;
-    size_t length;
-    int sizeoftype;
+    int64_t length;
+    int64_t sizeoftype;
     float scale;
     float* channel_scale;
 
    public:
     YTensor();
     ~YTensor();
-    bool Malloc(std::vector<int> shape, DataType dtype, DataLayout layout);
+    bool Malloc(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
     bool Free();
-    bool Zeros(std::vector<int> shape, DataType dtype, DataLayout layout);
+    bool Zeros(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
     bool Float();
     bool Half();
     bool CUDA();
@@ -62,8 +62,8 @@ class YTensor {
     bool CopyNumpyData(int64_t ptr);
     int64_t GetDataPtr();
     void SetDataPtr(int64_t ptr, bool is_gpu);
-    std::vector<int> GetShape();
-    void SetShape(std::vector<int> shape);
+    std::vector<int64_t> GetShape();
+    void SetShape(std::vector<int64_t> shape);
     bool GetIsGPU();
     void SetIsGPU(bool is_gpu);
     DataType GetDataType();
@@ -72,6 +72,8 @@ class YTensor {
     void SetDataLayout(DataLayout layout);
     TensorType GetTensorType();
     void SetTensorType(TensorType type);
+    int64_t GetRank();
+    void SetRank(int64_t rank);
 
 
 

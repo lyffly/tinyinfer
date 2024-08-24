@@ -33,7 +33,7 @@ bool gemm_cutlass_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, 
                           bool transA, bool transB, std::vector<int> in_shape,
                           std::vector<int> weight_shape, std::vector<int> bias_shape,
                           std::vector<int> out_shape, std::string dtype, int64_t pstream) {
-    cudaStream_t stream = (cudaStream_t)pstream;
+    // cudaStream_t stream = (cudaStream_t)pstream;
 
     int m = in_shape.at(0);
     int k = in_shape.at(1);
@@ -92,4 +92,6 @@ bool gemm_cutlass_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, 
     } else {
         printf("[Error] Gemm not support data type %s !!! \n", dtype.c_str());
     }
+
+    return true;
 }
