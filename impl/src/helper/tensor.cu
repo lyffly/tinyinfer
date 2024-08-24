@@ -11,12 +11,12 @@
 #include "stdio.h"
 
 int GetSizeofDtype(DataType data_type) {
-    if (data_type == DataType::INT32 || data_type == DataType::FLOAT32) {
+    if (data_type == DataType::INT64) {
+        return 8;
+    } else if (data_type == DataType::INT32 || data_type == DataType::FLOAT32) {
         return 4;
     } else if (data_type == DataType::FLOAT16 || data_type == DataType::HALF) {
         return 2;
-    } else if (data_type == DataType::INT64) {
-        return 8;
     } else if (data_type == DataType::INT8 || data_type == DataType::BOOL) {
         return 1;
     }
@@ -205,4 +205,29 @@ void YTensor::SetIsGPU(bool is_gpu) {
     if ((!this->is_gpu) && is_gpu) {
         this->CUDA();
     }
+}
+
+DataType YTensor::GetDataType() {
+    return this->data_type;
+}
+
+void YTensor::SetDataType(DataType type) {
+    this->sizeoftype = GetSizeofDtype(type);
+    this->data_type = type;
+}
+
+DataLayout YTensor::GetDataLayout() {
+    return this->layout;
+}
+
+void YTensor::SetDataLayout(DataLayout layout) {
+    return this->layout = layout;
+}
+
+TensorType YTensor::GetTensorType() {
+    return this->tensor_type;
+}
+
+void YTensor::SetTensorType(TensorType type) {
+    this->tensor_type = type;
 }

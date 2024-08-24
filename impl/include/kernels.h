@@ -66,6 +66,13 @@ class YTensor {
     void SetShape(std::vector<int> shape);
     bool GetIsGPU();
     void SetIsGPU(bool is_gpu);
+    DataType GetDataType();
+    void SetDataType(DataType type);
+    DataLayout GetDataLayout();
+    void SetDataLayout(DataLayout layout);
+    TensorType GetTensorType();
+    void SetTensorType(TensorType type);
+
 
 
    private:
