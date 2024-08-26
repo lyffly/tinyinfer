@@ -48,6 +48,7 @@ class YTensor {
     int64_t sizeoftype;
     float scale;
     float* channel_scale;
+    int64_t data_len;
 
    public:
     YTensor();
@@ -74,8 +75,7 @@ class YTensor {
     void SetTensorType(TensorType type);
     int64_t GetRank();
     void SetRank(int64_t rank);
-
-
+    int64_t GetDataLen();
 
    private:
     void* cpu_ptr;

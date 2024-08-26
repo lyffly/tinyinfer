@@ -85,6 +85,8 @@ bool YTensor::Zeros(std::vector<int64_t> shape, DataType data_type, DataLayout l
     this->data_type = data_type;
     this->layout = layout;
     this->is_gpu = false;
+    this->tensor_type = TensorType::VARIABLE;
+    this->data_len = this->sizeoftype * this->length;
     return true;
 }
 
@@ -105,6 +107,7 @@ bool YTensor::Float() {
         convert_fp16_to_fp32_cuda<<<grid_size, block_size>>>((half*)tmp, (float*)this->gpu_ptr,
                                                              this->length);
         this->data = this->gpu_ptr;
+        this->data_len = this->sizeoftype * this->length;
         cudaFree(tmp);
     } else if (this->data_type == DataType::FLOAT32) {
         return true;
@@ -133,6 +136,8 @@ bool YTensor::Half() {
                                                              this->length);
         this->data = this->gpu_ptr;
         cudaFree(tmp);
+        this->data_len = this->sizeoftype * this->length;
+        return true;
     } else if (this->data_type == DataType::HALF) {
         return true;
     } else {
@@ -191,6 +196,8 @@ int64_t YTensor::GetDataPtr() {
 void YTensor::SetShape(std::vector<int64_t> shape) {
     this->rank = shape.size();
     this->shape = shape;
+    this->length = GetProdofVector(shape);
+    this->data_len = this->sizeoftype * this->length;
 }
 
 std::vector<int64_t> YTensor::GetShape() {
@@ -214,6 +221,7 @@ DataType YTensor::GetDataType() {
 void YTensor::SetDataType(DataType type) {
     this->sizeoftype = GetSizeofDtype(type);
     this->data_type = type;
+    this->data_len = this->sizeoftype * this->length;
 }
 
 DataLayout YTensor::GetDataLayout() {
@@ -236,6 +244,6 @@ int64_t YTensor::GetRank() {
     return this->rank;
 }
 
-void YTensor::SetRank(int64_t rank) {
-    this->rank = rank;
+int64_t YTensor::GetDataLen() {
+    return this->data_len;
 }
