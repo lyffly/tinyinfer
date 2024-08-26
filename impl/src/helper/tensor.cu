@@ -94,7 +94,7 @@ bool YTensor::Float() {
         return false;
     }
     if (this->data_type == DataType::HALF) {
-        this->data_type = DataType::HALF;
+        this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(float);
         int block_size = 512;
         int grid_size = (this->length + block_size - 1) / block_size;
@@ -121,7 +121,7 @@ bool YTensor::Half() {
         return false;
     }
     if (this->data_type == DataType::FLOAT32) {
-        this->data_type = DataType::FLOAT32;
+        this->data_type = DataType::HALF;
         this->sizeoftype = sizeof(half);
         int block_size = 512;
         int grid_size = (this->length + block_size - 1) / block_size;

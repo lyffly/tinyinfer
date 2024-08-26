@@ -60,7 +60,7 @@ PYBIND11_MODULE(kernels, m) {
         .def(py::init())
         .def_property("shape", &YTensor::GetShape, &YTensor::SetShape)
         .def_property("is_gpu", &YTensor::GetIsGPU, &YTensor::SetIsGPU)
-        .def_property("dtype", &YTensor::GetDataLayout, &YTensor::SetDataType)
+        .def_property("dtype", &YTensor::GetDataType, &YTensor::SetDataType)
         .def_property("layout", &YTensor::GetDataLayout, &YTensor::SetDataLayout)
         .def_property("tensortype", &YTensor::GetTensorType, &YTensor::SetTensorType)
         .def_property("rank", &YTensor::GetRank, &YTensor::SetRank)
