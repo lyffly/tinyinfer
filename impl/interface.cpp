@@ -63,6 +63,7 @@ PYBIND11_MODULE(kernels, m) {
         .def_property("dtype", &YTensor::GetDataType, &YTensor::SetDataType)
         .def_property("layout", &YTensor::GetDataLayout, &YTensor::SetDataLayout)
         .def_property("tensortype", &YTensor::GetTensorType, &YTensor::SetTensorType)
+        .def_property("name", &YTensor::GetName, &YTensor::SetName)
         .def_property_readonly("rank", &YTensor::GetRank)
         .def_property_readonly("data_len", &YTensor::GetDataLen)
         .def("malloc", &YTensor::Malloc)

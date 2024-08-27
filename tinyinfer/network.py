@@ -25,13 +25,14 @@ class Network():
         _, self.stream = cudart.cudaStreamCreate()
         self.bind_all_edges()
         for key in ins.keys():
-            in_tensor = ins[key]
-            self.edges[key].shape = in_tensor.shape
-            self.edges[key].dtype = in_tensor.dtype
+            in_np = ins[key]
+            self.edges[key].shape = in_np.shape
+            self.edges[key].dtype = in_np.dtype
             ytensor = YTensor()
-            ytensor.zeros(list(in_tensor.shape), numpy_dtype_2_ytensor_dtype(in_tensor.dtype), DataLayout.nchw)
+            ytensor.zeros(list(in_np.shape), numpy_dtype_2_ytensor_dtype(in_np.dtype), DataLayout.nchw)
             ytensor.tensortype = TensorType.input
-            ytensor.copy_numpy_data(get_np_data_ptr(in_tensor))
+            ytensor.name = key
+            ytensor.copy_numpy_data(get_np_data_ptr(in_np))
             self.edges[key].tensor = ytensor
         # 设置模型精度时，设置node的精度
         for nodename in self.run_orders:
@@ -89,13 +90,10 @@ class Network():
         for key in self.edges.keys():
             if self.edges[key].type == "input" and self.config.use_gpu:
                 self.edges[key].tensor.cuda()
-                # self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.edges[key].type == "output" and self.config.use_gpu:
                 self.edges[key].tensor.cuda()
-                # self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.config.use_gpu:
                 self.edges[key].tensor.cuda()
-                # self.edges[key].tensor = self.edges[key].tensor.cuda()
 
 
     def run(self, ins = {}):

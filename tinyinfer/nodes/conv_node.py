@@ -32,8 +32,7 @@ class ConvNode(Node):
         if len(self.input_names) > 2:
             b_edge = self.all_edges[self.input_names[2]]
         out_edge = self.all_edges[self.output_names[0]]
-        # try:
-        if True:
+        try:
             # print("\n****use cudnn conv")
             if self.algo < 0:
                 # print("[Python] conv algo init : ", self.algo)
@@ -78,13 +77,9 @@ class ConvNode(Node):
                                 self.network_precision, "nchw", stream, self.desc)
             
             # print("cudnn : ",out_edge.tensor[0][0][0][:10])
-        # except:
-        # # if True:
-        #     # print("****use pytorch conv2d")
-        #     out_edge.tensor = F.conv2d(in_edge.tensor, w_edge.tensor, b_edge.tensor, stride=self.params.strides,
-        #             padding=self.params.pads[:2], groups=self.params.group)
-        #     # print(out_edge.tensor[0][0][0][:10])
-    
+        except:
+            raise IOError
+
     
     def infer_shapes(self):
         self.desc = kernels.create_conv2d_desc()
