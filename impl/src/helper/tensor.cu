@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -246,4 +247,26 @@ int64_t YTensor::GetRank() {
 
 int64_t YTensor::GetDataLen() {
     return this->data_len;
+}
+
+void YTensor::SetName(std::string name) {
+    this->name = name;
+}
+
+std::string YTensor::GetName() {
+    return this->name;
+}
+
+void YTensor::Print(int64_t len) {
+    if (this->is_gpu) {
+        checkCudaStatus(cudaMemcpy(this->cpu_ptr, this->gpu_ptr, this->sizeoftype * this->length,
+                                   cudaMemcpyDeviceToHost));
+    }
+    printf("data: ");
+    for (auto i=0; i<len; i++) {
+        if(this->data_type == DataType::FLOAT32) {
+            printf("%f, ", ((float*)this->cpu_ptr)[i]);
+        }
+    }
+    printf("\n");
 }

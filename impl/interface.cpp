@@ -74,6 +74,7 @@ PYBIND11_MODULE(kernels, m) {
         })
         .def("data_ptr", &YTensor::GetDataPtr)
         .def("set_data_ptr", &YTensor::SetDataPtr)
+        .def("print", &YTensor::Print)
         .def("float", &YTensor::Float)
         .def("half", &YTensor::Half)
         .def("cuda", &YTensor::CUDA)

@@ -32,21 +32,23 @@ if __name__ == "__main__":
     model_data = import_model(onnx_name, config)
     network = build_network(model_data, config)
     #images = torch.zeros([1,3,224,224], dtype=torch.float32, requires_grad=False)
-    inputs = {"images" : img}
+    inputs = {"images" : img.numpy()}
     network.prepare(inputs)
     # warup
-    for i in range(5):
+    for i in range(1):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 
-    for i in range(20):
+    loops = 20
+    for i in range(loops):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     end = time.time()
-    fps = 20.0/(end - start)
+    fps = float(loops)/(end - start)
     results["output"].cpu()
     out_ytensor = results["output"]
+    out_ytensor.print(10)
     shape = out_ytensor.shape
     shape_len = 1
     for s in shape:
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     outdata = np.frombuffer(out_ytensor.memoryview(), np.float32, shape_len)
     outdata = outdata.reshape(shape)
     out_tensor = softmax(outdata, axis=1)
+    print(out_tensor[0][:10])
     print("out shape:", out_tensor.shape)
     print("detect confidence:", np.max(out_tensor[0]))
     print("max index:", np.argmax(out_tensor[0]))

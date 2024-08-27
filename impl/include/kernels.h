@@ -49,6 +49,7 @@ class YTensor {
     float scale;
     float* channel_scale;
     int64_t data_len;
+    std::string name;
 
    public:
     YTensor();
@@ -76,6 +77,9 @@ class YTensor {
     int64_t GetRank();
     void SetRank(int64_t rank);
     int64_t GetDataLen();
+    void SetName(std::string name);
+    std::string GetName();
+    void Print(int64_t len);
 
    private:
     void* cpu_ptr;

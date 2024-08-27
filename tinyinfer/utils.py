@@ -1,5 +1,40 @@
 import torch
 import numpy as np
+from kernels import YTensor, DataType, DataLayout, TensorType
+
+def numpy_dtype_2_ytensor_dtype(datatype):
+    if datatype == np.float32:
+        return DataType.float32
+    elif datatype == np.float16:
+        return DataType.float16
+    elif datatype == np.bool:
+        return DataType.bool
+    elif datatype == np.int32:
+        return DataType.int32
+    elif datatype == np.int64:
+        return DataType.int64
+    elif datatype == np.int8:
+        return DataType.int8
+    else:
+        print("[Error] datatyoe convert wrong: ", datatype)
+        return None
+
+def torch_dtype_2_ytensor_dtype(datatype):
+    if datatype == torch.float32:
+        return DataType.float32
+    elif datatype == torch.float16:
+        return DataType.float16
+    elif datatype == torch.bool:
+        return DataType.bool
+    elif datatype == torch.int32:
+        return DataType.int32
+    elif datatype == torch.int64:
+        return DataType.int64
+    elif datatype == torch.int8:
+        return DataType.int8
+    else:
+        print("[Error] datatyoe convert wrong: ", datatype)
+        return None
 
 def data_type_onnx_to_torch(type):
     if type == 0:

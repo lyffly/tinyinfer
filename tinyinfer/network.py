@@ -4,23 +4,8 @@ from .edges import *
 import copy
 import torch
 from kernels import YTensor, DataType, DataLayout, TensorType
+from .utils import numpy_dtype_2_ytensor_dtype, get_np_data_ptr
 
-def torch_dtype_2_tensor_dtype(datatype):
-    if datatype == torch.float32:
-        return DataType.float32
-    elif datatype == torch.float16:
-        return DataType.float16
-    elif datatype == torch.bool:
-        return DataType.bool
-    elif datatype == torch.int32:
-        return DataType.int32
-    elif datatype == torch.int64:
-        return DataType.int64
-    elif datatype == torch.int8:
-        return DataType.int8
-    else:
-        print("[Error] datatyoe convert wrong: ", datatype)
-        return None
 
 class Network():
     def __init__(self):
@@ -44,8 +29,9 @@ class Network():
             self.edges[key].shape = in_tensor.shape
             self.edges[key].dtype = in_tensor.dtype
             ytensor = YTensor()
-            ytensor.zeros(list(in_tensor.shape), torch_dtype_2_tensor_dtype(in_tensor.dtype), DataLayout.nchw)
+            ytensor.zeros(list(in_tensor.shape), numpy_dtype_2_ytensor_dtype(in_tensor.dtype), DataLayout.nchw)
             ytensor.tensortype = TensorType.input
+            ytensor.copy_numpy_data(get_np_data_ptr(in_tensor))
             self.edges[key].tensor = ytensor
         # 设置模型精度时，设置node的精度
         for nodename in self.run_orders:
