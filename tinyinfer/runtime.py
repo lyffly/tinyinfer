@@ -8,7 +8,7 @@ from .edges import *
 from .params import *
 from .network import *
 from .onnx_to_bin import convert_to_bin
-from kernels import YTensor, DataType, DataLayout, Dims
+from kernels import YTensor, DataType, DataLayout, TensorType
 from .utils import get_np_data_ptr
 
 # bytes_to_int
@@ -302,12 +302,13 @@ def build_network(bin_data, config):
         else :
             print("[Error] data type nor impl !!")
             raise TypeError
-        # edge.tensor = YTensor()
-        # edge.tensor.zeros(edge.shape, dtype_2_tensor_dtype(edge.dtype), DataLayout.nchw)
+        edge.tensor = YTensor()
+        edge.tensor.zeros(edge.shape, dtype_2_tensor_dtype(edge.dtype), DataLayout.nchw)
+        edge.tensor.tensortype = TensorType.constant
         # # todo
-        # edge.tensor.copy_numpy_data(get_np_data_ptr(np_data))
-        edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
-        edge.tensor.requires_grad_(False)
+        edge.tensor.copy_numpy_data(get_np_data_ptr(np_data))
+        # edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
+        # edge.tensor.requires_grad_(False)
         network.edges[edge.name] = edge
     
     # networks in out edges

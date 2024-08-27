@@ -45,8 +45,15 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     end = time.time()
     fps = 20.0/(end - start)
-    out_tensor = results["output"].cpu().numpy()
-    out_tensor = softmax(out_tensor, axis=1)
+    results["output"].cpu()
+    out_ytensor = results["output"]
+    shape = out_ytensor.shape
+    shape_len = 1
+    for s in shape:
+        shape_len *= s
+    outdata = np.frombuffer(out_ytensor.memoryview(), np.float32, shape_len)
+    outdata = outdata.reshape(shape)
+    out_tensor = softmax(outdata, axis=1)
     print("out shape:", out_tensor.shape)
     print("detect confidence:", np.max(out_tensor[0]))
     print("max index:", np.argmax(out_tensor[0]))

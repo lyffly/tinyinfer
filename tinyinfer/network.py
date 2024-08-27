@@ -2,6 +2,25 @@ import numpy as np
 from .nodes import *
 from .edges import *
 import copy
+import torch
+from kernels import YTensor, DataType, DataLayout, TensorType
+
+def torch_dtype_2_tensor_dtype(datatype):
+    if datatype == torch.float32:
+        return DataType.float32
+    elif datatype == torch.float16:
+        return DataType.float16
+    elif datatype == torch.bool:
+        return DataType.bool
+    elif datatype == torch.int32:
+        return DataType.int32
+    elif datatype == torch.int64:
+        return DataType.int64
+    elif datatype == torch.int8:
+        return DataType.int8
+    else:
+        print("[Error] datatyoe convert wrong: ", datatype)
+        return None
 
 class Network():
     def __init__(self):
@@ -24,7 +43,10 @@ class Network():
             in_tensor = ins[key]
             self.edges[key].shape = in_tensor.shape
             self.edges[key].dtype = in_tensor.dtype
-            self.edges[key].tensor = in_tensor
+            ytensor = YTensor()
+            ytensor.zeros(list(in_tensor.shape), torch_dtype_2_tensor_dtype(in_tensor.dtype), DataLayout.nchw)
+            ytensor.tensortype = TensorType.input
+            self.edges[key].tensor = ytensor
         # 设置模型精度时，设置node的精度
         for nodename in self.run_orders:
             if self.config.fp32:
@@ -80,11 +102,14 @@ class Network():
         # move edge data to gpu
         for key in self.edges.keys():
             if self.edges[key].type == "input" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.cuda()
+                self.edges[key].tensor.cuda()
+                # self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.edges[key].type == "output" and self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.cuda()
+                self.edges[key].tensor.cuda()
+                # self.edges[key].tensor = self.edges[key].tensor.cuda()
             elif self.config.use_gpu:
-                self.edges[key].tensor = self.edges[key].tensor.cuda()
+                self.edges[key].tensor.cuda()
+                # self.edges[key].tensor = self.edges[key].tensor.cuda()
 
 
     def run(self, ins = {}):

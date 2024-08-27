@@ -69,6 +69,9 @@ PYBIND11_MODULE(kernels, m) {
         .def("free", &YTensor::Free)
         .def("copy_numpy_data", &YTensor::CopyNumpyData)
         .def("zeros", &YTensor::Zeros)
+        .def("memoryview", [](YTensor &tensor) {
+            return py::memoryview::from_memory((void*)tensor.GetDataPtr(), tensor.GetDataLen());
+        })
         .def("data_ptr", &YTensor::GetDataPtr)
         .def("set_data_ptr", &YTensor::SetDataPtr)
         .def("float", &YTensor::Float)

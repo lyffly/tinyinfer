@@ -7,6 +7,7 @@ from cuda import cudart
 import kernels
 from copy import deepcopy
 from .base_node import Node
+from kernels import YTensor, DataType, DataLayout, TensorType
 
 class CastNode(Node):
     def __init__(self, in_dtype, out_dtype):

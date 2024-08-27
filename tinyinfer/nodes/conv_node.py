@@ -7,6 +7,7 @@ from cuda import cudart
 import kernels
 from copy import deepcopy
 from .base_node import Node
+from kernels import YTensor, DataType, DataLayout, TensorType
 
 class ConvNode(Node):
     def __init__(self):
@@ -106,19 +107,11 @@ class ConvNode(Node):
             self.support_layout = "nchw"
         if self.network_precision == "float32" :
             out_edge.dtype = "float32"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-            if self.support_layout=="nhwc":
-                
-                _, stream = cudart.cudaStreamCreate()
-                weights_edge.tensor = weights_edge.tensor.cuda()
-                tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
-                kernels.layout_convert(weights_edge.tensor.data_ptr(), weights_edge.tensor.data_ptr(), 
-                                               weights_edge.shape, weights_edge.shape, self.network_precision, 
-                                               "nchw", "nhwc" , stream)
-                weights_edge.tensor = tmp_tensor
-                cudart.cudaStreamDestroy(stream)
-            self.tmp_tensor_in = torch.zeros_like(in_edge.tensor).cuda()
-            self.tmp_tensor_out = torch.zeros_like(out_edge.tensor).cuda()
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
+            # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
             weights_edge.tensor = weights_edge.tensor.half().cuda()

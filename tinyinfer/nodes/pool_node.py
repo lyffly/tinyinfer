@@ -7,6 +7,7 @@ from cuda import cudart
 import kernels
 from copy import deepcopy
 from .base_node import Node
+from kernels import YTensor, DataType, DataLayout, TensorType
 
 class PoolNode(Node):
     def __init__(self):
@@ -51,10 +52,18 @@ class PoolNode(Node):
             out_edge.shape = [n,c,1,1]
             if self.network_precision == "float32":
                 out_edge.dtype = "float32"
-                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+                ytensor = YTensor()
+                ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+                ytensor.tensortype = TensorType.variable
+                out_edge.tensor = ytensor
+                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
             elif self.network_precision == "float16" :
                 out_edge.dtype = "float16"
-                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+                ytensor = YTensor()
+                ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+                ytensor.tensortype = TensorType.variable
+                out_edge.tensor = ytensor
+                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
             else :
                 print("[Error] avgpool infer shape not support!!")
         elif self.type == "MaxPool":
@@ -72,10 +81,18 @@ class PoolNode(Node):
             out_edge.shape = [n,c,oh,ow]
             if self.network_precision == "float32":
                 out_edge.dtype = "float32"
-                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+                ytensor = YTensor()
+                ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+                ytensor.tensortype = TensorType.variable
+                out_edge.tensor = ytensor
+                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
             elif self.network_precision == "float16":
                 out_edge.dtype = "float16"
-                out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+                ytensor = YTensor()
+                ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+                ytensor.tensortype = TensorType.variable
+                out_edge.tensor = ytensor
+                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
             else :
                 print("[Error] maxpool infer shape not support!!")
         kernels.setup_pooling_descriptor(self.params.kernel_shape, self.params.pads,
