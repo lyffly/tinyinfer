@@ -26,11 +26,7 @@ class CastNode(Node):
                         in_edge.shape, out_edge.shape, "nchw", self.in_dtype, self.out_dtype, stream)
             #print("****use cuda datatype_convert\n")
         except:
-            if self.out_dtype == "float32":
-                out_edge.tensor = in_edge.tensor.float()
-            elif self.out_dtype == "float16":
-                out_edge.tensor = in_edge.tensor.half()
-            #print("****use pytorch datatype_convert\n")
+            raise IOError
 
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
@@ -39,10 +35,16 @@ class CastNode(Node):
         out_edge.shape = in_edge.shape
         if self.out_dtype == "float32":
             out_edge.dtype = "float32"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
         elif self.out_dtype == "float16":
             out_edge.dtype = "float16"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
         else :
             print("[Error] Cast infer shape not support!!")
 

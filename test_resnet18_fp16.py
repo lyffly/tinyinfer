@@ -6,6 +6,7 @@ np.set_printoptions(precision=3)
 
 from tinyinfer.runtime import import_model, build_network
 from tinyinfer.config import Config
+from tinyinfer.utils import ytensor_2_numpy
 import tinyinfer
 from image_utils import *
 from cuda import cudart
@@ -30,8 +31,8 @@ if __name__ == "__main__":
     
     model_data = import_model(onnx_name, config)
     network = build_network(model_data, config)
-    #images = torch.zeros([1,3,224,224], dtype=torch.float32, requires_grad=False)
-    inputs = {"images" : img}
+    
+    inputs = {"images" : img.numpy()}
     network.prepare(inputs)
     # warup
     for i in range(5):
@@ -39,13 +40,17 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 
-    for i in range(30):
+    loops = 20
+    for i in range(loops):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
     end = time.time()
-    fps = 30.0/(end - start)
-    out_tensor = results["output"].cpu().numpy()
-    out_tensor = softmax(out_tensor, axis=1)
+    fps = float(loops)/(end - start)
+    results["output"].cpu()
+    out_ytensor = results["output"]
+    out_ytensor.print(10)
+    outdata = ytensor_2_numpy(out_ytensor)
+    out_tensor = softmax(outdata, axis=1)
     print("out shape:", out_tensor.shape)
     print("detect confidence:", np.max(out_tensor[0]))
     print("max index:", np.argmax(out_tensor[0]))

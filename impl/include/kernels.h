@@ -57,6 +57,7 @@ class YTensor {
     bool Malloc(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
     bool Free();
     bool Zeros(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
+    bool ZerosLike(YTensor &ytensor);
     bool Float();
     bool Half();
     bool CUDA();
@@ -80,7 +81,7 @@ class YTensor {
     void SetName(std::string name);
     std::string GetName();
     void Print(int64_t len);
-    void ConvertLayout(DataLayout layout);
+    bool ConvertLayout(DataLayout layout);
 
    private:
     void* cpu_ptr;

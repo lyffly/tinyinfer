@@ -82,6 +82,10 @@ bool YTensor::Free() {
     return true;
 }
 
+bool YTensor::ZerosLike(YTensor &ytensor) {
+    return this->Zeros(ytensor.shape, ytensor.data_type, ytensor.layout);
+}
+
 bool YTensor::Zeros(std::vector<int64_t> shape, DataType data_type, DataLayout layout) {
     this->sizeoftype = GetSizeofDtype(data_type);
     this->length = GetProdofVector(shape);
@@ -103,7 +107,9 @@ bool YTensor::Zeros(std::vector<int64_t> shape, DataType data_type, DataLayout l
 }
 
 bool YTensor::Float() {
-    if ((!this->is_gpu) and this->data_type == DataType::HALF) {
+    if (this->data_type == DataType::FLOAT32) {
+        return true;
+    } else if ((!this->is_gpu) and this->data_type == DataType::HALF) {
         this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(float);
         float* tmp = (float*)malloc(this->length * sizeof(float));
@@ -112,8 +118,6 @@ bool YTensor::Float() {
         this->cpu_ptr = tmp;
         this->data = this->cpu_ptr;
         this->data_len = this->sizeoftype * this->length;
-    } else if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
-        return true;
     } else if (this->is_gpu and this->data_type == DataType::HALF) {
         this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(float);
@@ -129,8 +133,6 @@ bool YTensor::Float() {
         this->data = this->gpu_ptr;
         this->data_len = this->sizeoftype * this->length;
         cudaFree(tmp);
-    } else if (this->is_gpu and this->data_type == DataType::FLOAT32) {
-        return true;
     } else {
         printf("[Error] datatype not correct !!\n");
         return false;
@@ -139,7 +141,9 @@ bool YTensor::Float() {
 }
 
 bool YTensor::Half() {
-    if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
+     if (this->data_type == DataType::HALF) {
+        return true;
+    } else if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
         this->data_type = DataType::FLOAT16;
         this->sizeoftype = sizeof(half);
         half* tmp = (half*)malloc(this->length * sizeof(half));
@@ -148,8 +152,6 @@ bool YTensor::Half() {
         this->cpu_ptr = tmp;
         this->data = this->cpu_ptr;
         this->data_len = this->sizeoftype * this->length;
-    } else if ((!this->is_gpu) and this->data_type == DataType::HALF) {
-        return true;
     } else if (this->is_gpu and this->data_type == DataType::FLOAT32) {
         this->data_type = DataType::HALF;
         this->sizeoftype = sizeof(half);
@@ -165,8 +167,6 @@ bool YTensor::Half() {
         this->data = this->gpu_ptr;
         cudaFree(tmp);
         this->data_len = this->sizeoftype * this->length;
-        return true;
-    } else if (this->is_gpu and this->data_type == DataType::HALF) {
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -298,12 +298,73 @@ void YTensor::Print(int64_t len) {
     printf("\n");
 }
 
-void YTensor::ConvertLayout(DataLayout layout) {
-    if (this->layout == layout) {
-        return ;
-    } else if (this->layout == DataLayout::NCHW and layout == DataLayout::NHWC) {
-
-    } else if (this->layout == DataLayout::NHWC and layout == DataLayout::NCHW) {
-
+template <typename T>
+void convert_nchw_to_nhwc_cpu(T* in, T* out, int batch, int channel, int height, int width) {
+    int hw = height * width;
+    int input_i = 0;
+    int output_i = 0;
+    for (auto b_i=0; b_i < batch; b_i++) {
+        for (auto c_i=0; c_i < channel; c_i++) {
+            for (auto hw_i=0; hw_i < hw; hw_i++) {
+                input_i = b_i * channel * hw + c_i * hw + hw_i;
+                output_i = b_i * channel * hw + hw_i * channel + c_i;
+                out[output_i] = in[input_i];
+            }
+        }
     }
+}
+
+template <typename T>
+void convert_nhwc_to_nchw_cpu(T* in, T* out, int batch, int channel, int height, int width) {
+    int hw = height * width;
+    int input_i = 0;
+    int output_i = 0;
+    for (auto b_i=0; b_i < batch; b_i++) {
+        for (auto c_i=0; c_i < channel; c_i++) {
+            for (auto hw_i=0; hw_i < hw; hw_i++) {
+                output_i = b_i * channel * hw + c_i * hw + hw_i;
+                input_i = b_i * hw * channel + hw_i * channel + c_i;
+                out[output_i] = in[input_i];
+            }
+        }
+    }
+}
+
+
+bool YTensor::ConvertLayout(DataLayout layout) {
+    if (this->layout == layout) {
+        return true;
+    } else if ((!this->is_gpu) and this->layout == DataLayout::NCHW and layout == DataLayout::NHWC) {
+        if (this->data_type == DataType::FLOAT32) {
+            float* tmp = (float*)malloc(this->length * sizeof(float));
+            convert_nchw_to_nhwc_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            free(this->cpu_ptr);
+            this->cpu_ptr = tmp;
+        } else if (this->data_type == DataType::FLOAT16) {
+            half* tmp = (half*)malloc(this->length * sizeof(half));
+            convert_nchw_to_nhwc_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            free(this->cpu_ptr);
+            this->cpu_ptr = tmp;
+        }
+        this->data = this->cpu_ptr;
+        this->layout = DataLayout::NHWC;
+    } else if ((!this->is_gpu) and this->layout == DataLayout::NHWC and layout == DataLayout::NCHW) {
+        if (this->data_type == DataType::FLOAT32) {
+            float* tmp = (float*)malloc(this->length * sizeof(float));
+            convert_nhwc_to_nchw_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            free(this->cpu_ptr);
+            this->cpu_ptr = tmp;
+        } else if (this->data_type == DataType::FLOAT16) {
+            half* tmp = (half*)malloc(this->length * sizeof(half));
+            convert_nhwc_to_nchw_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            free(this->cpu_ptr);
+            this->cpu_ptr = tmp;
+        }
+        this->data = this->cpu_ptr;
+        this->layout = DataLayout::NCHW;
+    } else {
+        printf("tensor ConvertLayout not support yet !!");
+        return false;
+    }
+    return true;
 }

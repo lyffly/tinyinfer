@@ -111,19 +111,24 @@ class ConvNode(Node):
             out_edge.dtype = "float16"
             weights_edge.tensor.half()
             if self.support_layout=="nhwc":
-                _, stream = cudart.cudaStreamCreate()
-                tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()
-                kernels.layout_convert(weights_edge.tensor.data_ptr(), tmp_tensor.data_ptr(), 
-                                               weights_edge.shape, weights_edge.shape, self.network_precision, 
-                                               "nchw", "nhwc" , stream)
-                weights_edge.tensor = tmp_tensor
-                cudart.cudaStreamDestroy(stream)
+                weights_edge.tensor.convert_layout(DataLayout.nhwc)
             if bias_edge:
-                bias_edge.tensor = bias_edge.tensor.half()
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
-            self.tmp_tensor_in = torch.zeros_like(in_edge.tensor).cuda()
-            self.tmp_tensor_out = torch.zeros_like(out_edge.tensor).cuda()
-
+                bias_edge.tensor.half()
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
+            # 临时用 额外的转换 fix later
+            tmp_in_tensor = YTensor()
+            tmp_in_tensor.zeros_like(in_edge.tensor)
+            tmp_in_tensor.tensortype = TensorType.variable
+            tmp_in_tensor.cuda()
+            self.tmp_tensor_in = tmp_in_tensor
+            tmp_out_tensor = YTensor()
+            tmp_out_tensor.zeros_like(out_edge.tensor)
+            tmp_out_tensor.tensortype = TensorType.variable
+            tmp_out_tensor.cuda()
+            self.tmp_tensor_out = tmp_out_tensor
         else :
             print("[Error] conv infer shape not support!!")
     
