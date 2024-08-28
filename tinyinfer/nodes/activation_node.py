@@ -25,8 +25,7 @@ class ActivationNode(Node):
                                 self.params.beta, in_edge.shape, out_edge.shape, self.network_precision,
                                 "nchw", self.type, stream)
         except:
-            #print("****use pytorch activation")
-            out_edge.tensor = torch.max(torch.tensor(0), in_edge.tensor)
+            raise IOError
         
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]

@@ -2,6 +2,15 @@ import torch
 import numpy as np
 from kernels import YTensor, DataType, DataLayout, TensorType
 
+def ytensor_2_numpy(ytensor) :
+    shape = ytensor.shape
+    shape_len = 1
+    for s in shape:
+        shape_len *= s
+    out_np = np.frombuffer(ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len)
+    out_np = out_np.reshape(shape)
+    return out_np
+
 def numpy_dtype_2_ytensor_dtype(datatype):
     if datatype == np.float32:
         return DataType.float32
@@ -35,6 +44,23 @@ def torch_dtype_2_ytensor_dtype(datatype):
     else:
         print("[Error] datatyoe convert wrong: ", datatype)
         return None
+
+def ytensor_type_2_numpy(type):
+    if type == DataType.float32:
+        return np.float32
+    elif type == DataType.int8:
+        return np.int8
+    elif type == DataType.int32:
+        return np.int32
+    elif type == DataType.int64:
+        return np.int64
+    elif type == DataType.bool:
+        return np.bool
+    elif type == DataType.float16:
+        return np.float16
+    else :
+        print("[Error] unknown type : ", type)
+        raise TypeError
 
 def data_type_onnx_to_torch(type):
     if type == 0:

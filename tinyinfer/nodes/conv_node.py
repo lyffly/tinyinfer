@@ -109,7 +109,7 @@ class ConvNode(Node):
             # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
-            weights_edge.tensor = weights_edge.tensor.half().cuda()
+            weights_edge.tensor.half()
             if self.support_layout=="nhwc":
                 _, stream = cudart.cudaStreamCreate()
                 tmp_tensor = torch.zeros_like(weights_edge.tensor).cuda()

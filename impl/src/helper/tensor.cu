@@ -32,6 +32,17 @@ int64_t GetProdofVector(std::vector<int64_t> shapes) {
     return sum;
 }
 
+void convert_fp32_to_fp16_cpu(float* in_ptr, half* out_ptr, int length) {
+    for(auto i=0; i< length; i++) {
+        out_ptr[i] = __float2half(in_ptr[i]);
+    }
+}
+
+void convert_fp16_to_fp32_cpu(half* in_ptr, float* out_ptr, int length) {
+    for(auto i=0; i< length; i++) {
+        out_ptr[i] = __half2float(in_ptr[i]);
+    }
+}
 
 __global__ void convert_fp32_to_fp16_cuda(float* in_ptr, half* out_ptr, int length) {
     int index = blockDim.x * blockIdx.x + threadIdx.x;
@@ -92,11 +103,18 @@ bool YTensor::Zeros(std::vector<int64_t> shape, DataType data_type, DataLayout l
 }
 
 bool YTensor::Float() {
-    if (!this->is_gpu) {
-        printf("[Error] data not on gpu !!\n");
-        return false;
-    }
-    if (this->data_type == DataType::HALF) {
+    if ((!this->is_gpu) and this->data_type == DataType::HALF) {
+        this->data_type = DataType::FLOAT32;
+        this->sizeoftype = sizeof(float);
+        float* tmp = (float*)malloc(this->length * sizeof(float));
+        convert_fp16_to_fp32_cpu((half*)this->cpu_ptr, (float*)tmp, this->length);
+        free(this->cpu_ptr);
+        this->cpu_ptr = tmp;
+        this->data = this->cpu_ptr;
+        this->data_len = this->sizeoftype * this->length;
+    } else if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
+        return true;
+    } else if (this->is_gpu and this->data_type == DataType::HALF) {
         this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(float);
         int block_size = 512;
@@ -104,13 +122,14 @@ bool YTensor::Float() {
         void* tmp;
         cudaMalloc((void**)&tmp, this->length * sizeof(half));
         cudaMemcpy(tmp, this->gpu_ptr, this->length * sizeof(half), cudaMemcpyDeviceToDevice);
+        cudaFree(this->gpu_ptr);
         cudaMalloc((void**)&(this->gpu_ptr), this->length * this->sizeoftype);
         convert_fp16_to_fp32_cuda<<<grid_size, block_size>>>((half*)tmp, (float*)this->gpu_ptr,
                                                              this->length);
         this->data = this->gpu_ptr;
         this->data_len = this->sizeoftype * this->length;
         cudaFree(tmp);
-    } else if (this->data_type == DataType::FLOAT32) {
+    } else if (this->is_gpu and this->data_type == DataType::FLOAT32) {
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -120,11 +139,18 @@ bool YTensor::Float() {
 }
 
 bool YTensor::Half() {
-    if (!this->is_gpu) {
-        printf("[Error] data not on gpu !!\n");
-        return false;
-    }
-    if (this->data_type == DataType::FLOAT32) {
+    if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
+        this->data_type = DataType::FLOAT16;
+        this->sizeoftype = sizeof(half);
+        half* tmp = (half*)malloc(this->length * sizeof(half));
+        convert_fp32_to_fp16_cpu((float*)this->cpu_ptr, (half*)tmp, this->length);
+        free(this->cpu_ptr);
+        this->cpu_ptr = tmp;
+        this->data = this->cpu_ptr;
+        this->data_len = this->sizeoftype * this->length;
+    } else if ((!this->is_gpu) and this->data_type == DataType::HALF) {
+        return true;
+    } else if (this->is_gpu and this->data_type == DataType::FLOAT32) {
         this->data_type = DataType::HALF;
         this->sizeoftype = sizeof(half);
         int block_size = 512;
@@ -132,6 +158,7 @@ bool YTensor::Half() {
         void* tmp;
         cudaMalloc((void**)&tmp, this->length * sizeof(float));
         cudaMemcpy(tmp, this->gpu_ptr, this->length * sizeof(float), cudaMemcpyDeviceToDevice);
+        cudaFree(this->gpu_ptr);
         cudaMalloc((void**)&(this->gpu_ptr), this->length * this->sizeoftype);
         convert_fp32_to_fp16_cuda<<<grid_size, block_size>>>((float*)tmp, (half*)this->gpu_ptr,
                                                              this->length);
@@ -139,7 +166,7 @@ bool YTensor::Half() {
         cudaFree(tmp);
         this->data_len = this->sizeoftype * this->length;
         return true;
-    } else if (this->data_type == DataType::HALF) {
+    } else if (this->is_gpu and this->data_type == DataType::HALF) {
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -269,4 +296,14 @@ void YTensor::Print(int64_t len) {
         }
     }
     printf("\n");
+}
+
+void YTensor::ConvertLayout(DataLayout layout) {
+    if (this->layout == layout) {
+        return ;
+    } else if (this->layout == DataLayout::NCHW and layout == DataLayout::NHWC) {
+
+    } else if (this->layout == DataLayout::NHWC and layout == DataLayout::NCHW) {
+
+    }
 }

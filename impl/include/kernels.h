@@ -80,6 +80,7 @@ class YTensor {
     void SetName(std::string name);
     std::string GetName();
     void Print(int64_t len);
+    void ConvertLayout(DataLayout layout);
 
    private:
     void* cpu_ptr;
@@ -189,6 +190,7 @@ bool pooling_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kern
 
 //***********************************************************************************************************
 // convert data layout
+
 bool layout_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
                             std::vector<int> out_shape, std::string dtype, std::string in_layout,
                             std::string out_layout, int64_t pstream);
