@@ -12,10 +12,6 @@ from image_utils import *
 from cuda import cudart
 import time
 
-torch.backends.cuda.matmul.allow_tf32 = False
-torch.backends.cudnn.allow_tf32 = False
-torch.backends.cudnn.benchmark = True
-
 if __name__ == "__main__":
     tinyinfer.get_gpu_info()
     img_name = "data/eagle.jpg"

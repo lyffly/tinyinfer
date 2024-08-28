@@ -12,8 +12,6 @@ from image_utils import *
 from cuda import cudart
 import time
 
-torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True
-torch.backends.cudnn.benchmark = True
 
 if __name__ == "__main__":
     tinyinfer.get_gpu_info()
