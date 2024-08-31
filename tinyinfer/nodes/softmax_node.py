@@ -23,16 +23,20 @@ class SoftmaxNode(Node):
     
     def infer_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32" :
-            out_edge.shape = []
+        out_edge.shape = in_edge.shape
+        if self.network_precision == "float32" :
             out_edge.dtype = "float32"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-        elif self.params.axis == 1 and self.network_precision == "float16" :
-            out_edge.shape = []
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
+        elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
         else :
             print("[Error] Softmax infer shape not support!!")
     

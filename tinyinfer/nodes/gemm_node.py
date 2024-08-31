@@ -26,8 +26,8 @@ class GemmNode(Node):
             bias_edge = self.all_edges[self.input_names[2]]
         
         try: # use cuda cublas
-            if self.workspace_size : 
-                _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
+            # if self.workspace_size : 
+            #     _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
             if bias_edge and in_edge.shape[0] == 1:
                 kernels.gemv(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta, 

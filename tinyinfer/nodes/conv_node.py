@@ -106,7 +106,6 @@ class ConvNode(Node):
             ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-            # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
         elif self.network_precision == "float16" :
             out_edge.dtype = "float16"
             weights_edge.tensor.half()

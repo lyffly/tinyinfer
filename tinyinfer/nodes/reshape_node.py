@@ -53,11 +53,17 @@ class ReshapeNode(Node):
         if self.network_precision == "float32" :
             out_edge.shape = output_shape_tmp
             out_edge.dtype = "float32"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
         elif self.network_precision == "float16" :
             out_edge.shape = output_shape_tmp
             out_edge.dtype = "float16"
-            out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
+            ytensor = YTensor()
+            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
+            ytensor.tensortype = TensorType.variable
+            out_edge.tensor = ytensor
         else :
             print("[Error] Reshape infer shape not support!!")
     

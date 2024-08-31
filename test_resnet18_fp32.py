@@ -37,7 +37,7 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward 
-    loops = 20
+    loops = 50
     for i in range(loops):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
