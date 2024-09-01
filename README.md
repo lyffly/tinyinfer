@@ -2,10 +2,10 @@
 
 #### 介绍
 
-一个推理框架，目标是最精简的技术实现，开发中。
-更新地址1: <https://github.com/lyffly/tinyinfer>
-更新地址2: <https://gitee.com/yunfeiliu/tinyinfer>
-长期计划如下，现在还比较早期，晚上和周末才有时间更新
+一个推理框架，目标是最精简的技术实现，开发中。  
+更新地址1: <https://github.com/lyffly/tinyinfer>  
+更新地址2: <https://gitee.com/yunfeiliu/tinyinfer>  
+长期计划如下，现在还比较早期，晚上和周末才有时间更新  
 
 - [x] 使用Python实现前端接口
 - [x] 支持FP32推理
@@ -51,18 +51,18 @@ python3 test_resnet18_fp16.py
 
 #### 愿景
 
-不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。
+不求速度多快，不求技术多高级，只做技术积累，把一个推理引擎所需要的内容整合完毕。  
 cuda kernel的实现目前先实现最naive的版本，后续再优化
 
 #### 参考或看过或未来会用到的仓库
 
-1、<https://github.com/OpenPPL/ppl.kernel.cuda>
-2、<https://github.com/OpenPPL/ppl.llm.kernel.cuda>
-3、<https://github.com/alibaba/MNN>
-4、<https://github.com/Tencent/TNN>
-5、<https://github.com/ggerganov/llama.cpp>
-6、<https://github.com/karpathy/llm.c>
-7、<https://github.com/triton-lang/triton>
-8、<https://github.com/NVIDIA/cutlass>
-9、<https://github.com/NVIDIA/TensorRT>
-10、<https://github.com/OpenPPL/ppq>
+1、<https://github.com/OpenPPL/ppl.kernel.cuda>  
+2、<https://github.com/OpenPPL/ppl.llm.kernel.cuda>  
+3、<https://github.com/alibaba/MNN>  
+4、<https://github.com/Tencent/TNN>  
+5、<https://github.com/ggerganov/llama.cpp>  
+6、<https://github.com/karpathy/llm.c>  
+7、<https://github.com/triton-lang/triton>  
+8、<https://github.com/NVIDIA/cutlass>  
+9、<https://github.com/NVIDIA/TensorRT>  
+10、<https://github.com/OpenPPL/ppq>  
