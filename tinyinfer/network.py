@@ -7,7 +7,7 @@ from kernels import YTensor, DataType, DataLayout, TensorType
 from .utils import numpy_dtype_2_ytensor_dtype, get_np_data_ptr
 
 
-class Network():
+class Network:
     def __init__(self):
         super().__init__()
         self.nodes = {}
@@ -19,9 +19,10 @@ class Network():
         self.nodes_num = 0
         self.edges_num = 0
         self.stream = None
-    
-    def prepare(self, ins = {}):
+
+    def prepare(self, ins={}):
         from cuda import cudart
+
         _, self.stream = cudart.cudaStreamCreate()
         self.bind_all_edges()
         for key in ins.keys():
@@ -29,7 +30,11 @@ class Network():
             self.edges[key].shape = in_np.shape
             self.edges[key].dtype = in_np.dtype
             ytensor = YTensor()
-            ytensor.zeros(list(in_np.shape), numpy_dtype_2_ytensor_dtype(in_np.dtype), DataLayout.nchw)
+            ytensor.zeros(
+                list(in_np.shape),
+                numpy_dtype_2_ytensor_dtype(in_np.dtype),
+                DataLayout.nchw,
+            )
             ytensor.tensortype = TensorType.input
             ytensor.name = key
             ytensor.copy_numpy_data(get_np_data_ptr(in_np))
@@ -57,9 +62,11 @@ class Network():
                             to_add_node.output_names = [to_add_edge.name]
                             to_add_node.name = "Cast_" + str(len(self.nodes))
                             self.nodes[to_add_node.name] = to_add_node
-                            
+
                             name_idx = self.nodes[node_name].input_names.index(io_name)
-                            self.nodes[node_name].input_names[name_idx] = to_add_edge.name
+                            self.nodes[node_name].input_names[
+                                name_idx
+                            ] = to_add_edge.name
                             run_idx = self.run_orders.index(node_name)
                             self.run_orders.insert(run_idx, to_add_node.name)
                 if io_edge.type == "output":
@@ -74,9 +81,11 @@ class Network():
                             to_add_node.output_names = [io_name]
                             to_add_node.name = "Cast_" + str(len(self.nodes))
                             self.nodes[to_add_node.name] = to_add_node
-                            
+
                             name_idx = self.nodes[node_name].output_names.index(io_name)
-                            self.nodes[node_name].output_names[name_idx] = to_add_edge.name
+                            self.nodes[node_name].output_names[
+                                name_idx
+                            ] = to_add_edge.name
                             self.run_orders.append(to_add_node.name)
         self.bind_all_edges()
         # 形状推导 tensor 进行绑定
@@ -95,8 +104,7 @@ class Network():
             elif self.config.use_gpu:
                 self.edges[key].tensor.cuda()
 
-
-    def run(self, ins = {}):
+    def run(self, ins={}):
         # 把输入输出数据转到gpu
         # for key in self.edges.keys():
         #     if self.edges[key].type == "input" and self.config.use_gpu:
@@ -117,7 +125,7 @@ class Network():
             #     out_tensor = out_tensor.cpu()
             # outs[name] = out_tensor
             outs[name] = self.edges[name].tensor
-                
+
         if self.config.log_verbose:
             print("[run] network run end ! \n", "*" * 80)
 
@@ -126,5 +134,3 @@ class Network():
     def bind_all_edges(self):
         for nodename in self.run_orders:
             self.nodes[nodename].bind_all_edges(self.edges)
-
-

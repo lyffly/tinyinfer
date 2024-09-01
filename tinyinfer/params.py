@@ -1,5 +1,4 @@
-
-class ConvParams :
+class ConvParams:
     def __init__(self):
         self.pads = None
         self.kernel_shape = None
@@ -7,17 +6,20 @@ class ConvParams :
         self.dilations = None
         self.group = 1
 
-class ActivationParams :
+
+class ActivationParams:
     def __init__(self):
         self.type = None
         self.alpha = 1.0
         self.beta = 1.0
 
-class ElementwiseParams :
+
+class ElementwiseParams:
     def __init__(self):
         self.type = None
 
-class PoolParams :
+
+class PoolParams:
     def __init__(self):
         self.type = None
         self.pads = []
@@ -25,19 +27,22 @@ class PoolParams :
         self.strides = []
         self.ceil_mode = 0
 
-class FlattenParams :
+
+class FlattenParams:
     def __init__(self):
         self.axis = None
         self.is_inplace = False
 
-class GemmParams :
+
+class GemmParams:
     def __init__(self):
         self.alpha = None
         self.beta = None
         self.transA = 0
         self.transB = 0
 
-class ResizeParams :
+
+class ResizeParams:
     def __init__(self):
         self.coordinate_transformation_mode = None
         self.cubic_coeff_a = None
@@ -46,36 +51,44 @@ class ResizeParams :
         self.exclude_outside = None
         self.extrapolation_value = None
 
-class ConcatParams :
+
+class ConcatParams:
     def __init__(self):
         self.axis = None
-        
-class TransposeParams :
+
+
+class TransposeParams:
     def __init__(self):
         self.perm = None
 
-class ReshapeParams :
+
+class ReshapeParams:
     def __init__(self):
         self.allowzero = None
         self.shape = None
 
-class CastParams :
+
+class CastParams:
     def __init__(self):
         self.in_dtype = "float32"
         self.out_dtype = "float16"
 
-class SplitParams :
+
+class SplitParams:
     def __init__(self):
         self.axis = None
 
-class SoftmaxParams :
+
+class SoftmaxParams:
     def __init__(self):
         self.axis = None
 
-class GatherParams :
+
+class GatherParams:
     def __init__(self):
         self.axis = None
 
-class SliceParams :
+
+class SliceParams:
     def __init__(self):
         self.axis = None

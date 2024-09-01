@@ -47,7 +47,7 @@ PYBIND11_MODULE(kernels, m) {
         .value("nchw", DataLayout::NCHW)
         .value("nhwc", DataLayout::NHWC)
         .export_values();
-    
+
     py::enum_<TensorType>(m, "TensorType")
         .value("undefine", TensorType::UNDEFINE)
         .value("constant", TensorType::CONSTANT)
@@ -70,9 +70,11 @@ PYBIND11_MODULE(kernels, m) {
         .def("free", &YTensor::Free)
         .def("copy_numpy_data", &YTensor::CopyNumpyData)
         .def("zeros", &YTensor::Zeros)
-        .def("memoryview", [](YTensor &tensor) {
-            return py::memoryview::from_memory((void*)tensor.GetDataPtr(), tensor.GetDataLen());
-        })
+        .def("memoryview",
+             [](YTensor& tensor) {
+                 return py::memoryview::from_memory((void*)tensor.GetDataPtr(),
+                                                    tensor.GetDataLen());
+             })
         .def("data_ptr", &YTensor::GetDataPtr)
         .def("set_data_ptr", &YTensor::SetDataPtr)
         .def("print", &YTensor::Print)
@@ -82,5 +84,4 @@ PYBIND11_MODULE(kernels, m) {
         .def("half", &YTensor::Half)
         .def("cuda", &YTensor::CUDA)
         .def("cpu", &YTensor::CPU);
-        
 }

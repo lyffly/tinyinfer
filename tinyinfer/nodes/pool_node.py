@@ -9,6 +9,7 @@ from copy import deepcopy
 from .base_node import Node
 from kernels import YTensor, DataType, DataLayout, TensorType
 
+
 class PoolNode(Node):
     def __init__(self):
         super().__init__()
@@ -24,47 +25,65 @@ class PoolNode(Node):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
-            n,c,h,w = in_edge.tensor.shape
-            if True:
-                #print("****use cudnn GlobalAveragePool")
-                kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
-                                self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
-                                self.network_precision, "nchw", stream, self.desc)
-            # except:
-            #     out_edge.tensor = F.avg_pool2d(in_edge.tensor,(h,w))
-            
-        elif self.type == "MaxPool":
-            if True:
-                kernels.pooling(in_edge.tensor.data_ptr(),  out_edge.tensor.data_ptr(), self.params.kernel_shape,
-                                self.params.pads, self.params.strides, in_edge.shape, out_edge.shape, self.type,
-                                self.network_precision, "nchw", stream, self.desc)
-            # except:
-            #     out_edge.tensor = F.max_pool2d(in_edge.tensor, self.params.kernel_shape,
-            #                             stride=self.params.strides,padding=self.params.pads[:2])
+            n, c, h, w = in_edge.tensor.shape
+            try:
+                # print("****use cudnn GlobalAveragePool")
+                kernels.pooling(
+                    in_edge.tensor.data_ptr(),
+                    out_edge.tensor.data_ptr(),
+                    self.params.kernel_shape,
+                    self.params.pads,
+                    self.params.strides,
+                    in_edge.shape,
+                    out_edge.shape,
+                    self.type,
+                    self.network_precision,
+                    "nchw",
+                    stream,
+                    self.desc,
+                )
+            except:
+                raise IOError
 
+        elif self.type == "MaxPool":
+            try:
+                kernels.pooling(
+                    in_edge.tensor.data_ptr(),
+                    out_edge.tensor.data_ptr(),
+                    self.params.kernel_shape,
+                    self.params.pads,
+                    self.params.strides,
+                    in_edge.shape,
+                    out_edge.shape,
+                    self.type,
+                    self.network_precision,
+                    "nchw",
+                    stream,
+                    self.desc,
+                )
+            except:
+                raise IOError
 
     def infer_shapes(self):
         self.desc = kernels.create_pooling_desc()
         in_edge = self.all_edges[self.input_names[0]]
-        n,c,h,w = in_edge.shape
+        n, c, h, w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
-            out_edge.shape = [n,c,1,1]
+            out_edge.shape = [n, c, 1, 1]
             if self.network_precision == "float32":
                 out_edge.dtype = "float32"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
-            elif self.network_precision == "float16" :
+            elif self.network_precision == "float16":
                 out_edge.dtype = "float16"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
-            else :
+            else:
                 print("[Error] avgpool infer shape not support!!")
         elif self.type == "MaxPool":
             # floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
@@ -76,29 +95,34 @@ class PoolNode(Node):
             dilationw = 1
             strideh = self.params.strides[0]
             stridew = self.params.strides[1]
-            oh = math.floor((h + padh*2 - ((kh-1)*dilationh + 1))/strideh + 1)
-            ow = math.floor((w + padw*2 - ((kw-1)*dilationw + 1))/stridew + 1)
-            out_edge.shape = [n,c,oh,ow]
+            oh = math.floor((h + padh * 2 - ((kh - 1) * dilationh + 1)) / strideh + 1)
+            ow = math.floor((w + padw * 2 - ((kw - 1) * dilationw + 1)) / stridew + 1)
+            out_edge.shape = [n, c, oh, ow]
             if self.network_precision == "float32":
                 out_edge.dtype = "float32"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float32, requires_grad=False)
             elif self.network_precision == "float16":
                 out_edge.dtype = "float16"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-                # out_edge.tensor = torch.zeros(out_edge.shape, dtype=torch.float16, requires_grad=False)
-            else :
+            else:
                 print("[Error] maxpool infer shape not support!!")
-        kernels.setup_pooling_descriptor(self.params.kernel_shape, self.params.pads,
-                              self.params.strides, in_edge.shape,
-                              out_edge.shape, self.type, self.network_precision,
-                              "nchw", self.desc)
+        kernels.setup_pooling_descriptor(
+            self.params.kernel_shape,
+            self.params.pads,
+            self.params.strides,
+            in_edge.shape,
+            out_edge.shape,
+            self.type,
+            self.network_precision,
+            "nchw",
+            self.desc,
+        )
 
     def infer_layouts(self):
         pass

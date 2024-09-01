@@ -21,4 +21,3 @@ add_subdirectory(impl)
 
 # 指定安装路径
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/tinyinfer CACHE INTERNAL "install directories")
-

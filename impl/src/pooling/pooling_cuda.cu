@@ -95,7 +95,7 @@ bool pooling_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kern
         int outc = out_shape.at(1);
         int outh = out_shape.at(2);
         int outw = out_shape.at(3);
-        
+
         int partH = (outh + 3) / 4;
         int partW = (outw + 0) / 1;
         dim3 dim_block(32, 4, 1);

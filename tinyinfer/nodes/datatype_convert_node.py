@@ -9,22 +9,31 @@ from copy import deepcopy
 from .base_node import Node
 from kernels import YTensor, DataType, DataLayout, TensorType
 
+
 class CastNode(Node):
     def __init__(self, in_dtype, out_dtype):
         super().__init__()
         self.params = CastParams()
         self.type = "Cast"
-        self.in_dtype = in_dtype    #"float32"
-        self.out_dtype = out_dtype  #"float16"
-    
+        self.in_dtype = in_dtype  # "float32"
+        self.out_dtype = out_dtype  # "float16"
+
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        
-        try: # use cuda cublas
-            kernels.datatype_convert(in_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
-                        in_edge.shape, out_edge.shape, "nchw", self.in_dtype, self.out_dtype, stream)
-            #print("****use cuda datatype_convert\n")
+
+        try:  # use cuda cublas
+            kernels.datatype_convert(
+                in_edge.tensor.data_ptr(),
+                out_edge.tensor.data_ptr(),
+                in_edge.shape,
+                out_edge.shape,
+                "nchw",
+                self.in_dtype,
+                self.out_dtype,
+                stream,
+            )
+            # print("****use cuda datatype_convert\n")
         except:
             raise IOError
 
@@ -45,7 +54,7 @@ class CastNode(Node):
             ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-        else :
+        else:
             print("[Error] Cast infer shape not support!!")
 
     def infer_layouts(self):

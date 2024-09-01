@@ -11,4 +11,3 @@ from .resize_node import ResizeNode
 from .slice_node import SliceNode
 from .softmax_node import SoftmaxNode
 from .transpose_node import TransposeNode
-

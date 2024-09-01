@@ -16,13 +16,20 @@ PLAT_TO_CMAKE = {
     "win-arm64": "ARM64",
 }
 
-def get_build_type():
-    build_type = 'Release'
-    if os.getenv('DEBUG', default='0').upper() in ['ON', '1', 'YES', 'TRUE', 'Y']:
-        build_type = 'Debug'
 
-    if os.getenv('REL_WITH_DEB_INFO', default='0').upper() in ['ON', '1', 'YES', 'TRUE', 'Y']:
-        build_type = 'RelWithDebInfo'
+def get_build_type():
+    build_type = "Release"
+    if os.getenv("DEBUG", default="0").upper() in ["ON", "1", "YES", "TRUE", "Y"]:
+        build_type = "Debug"
+
+    if os.getenv("REL_WITH_DEB_INFO", default="0").upper() in [
+        "ON",
+        "1",
+        "YES",
+        "TRUE",
+        "Y",
+    ]:
+        build_type = "RelWithDebInfo"
 
     return build_type
 
@@ -43,8 +50,8 @@ class CMakeBuild(build_ext):
         # Must be in this form due to bug in .resolve() only fixed in Python 3.10+
         ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
         extdir = ext_fullpath.parent.resolve()
-        print("ext_fullpath=",ext_fullpath )
-        print("extdir=",extdir )
+        print("ext_fullpath=", ext_fullpath)
+        print("extdir=", extdir)
 
         # Using this requires trailing slash for auto-detection & inclusion of
         # auxiliary "native" libs
@@ -110,7 +117,6 @@ class CMakeBuild(build_ext):
                 ]
                 build_args += ["--config", cfg]
 
-
         # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level
         # across all generators.
         if "CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ:
@@ -121,7 +127,7 @@ class CMakeBuild(build_ext):
                 build_args += [f"-j{self.parallel}"]
 
         build_temp = Path(self.build_temp) / ext.name
-        print("build_temp=", build_temp )
+        print("build_temp=", build_temp)
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
@@ -132,8 +138,10 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", ".", *build_args], cwd=build_temp, check=True
         )
 
+
 def find_so_files():
     import glob
+
     names = glob.glob("build/*/*.so")
     print("so name: ", names)
     return names
@@ -153,8 +161,8 @@ setup(
     packages=find_packages(),
     # package_dir={'': 'build'},
     include_package_data=True,
-    package_data={'': ['build/*/*.so']},
-    #[('', find_so_files())],
+    package_data={"": ["build/*/*.so"]},
+    # [('', find_so_files())],
     # package_dir={'': 'tinyinfer'},
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},

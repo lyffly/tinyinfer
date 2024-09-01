@@ -2,14 +2,18 @@ import torch
 import numpy as np
 from kernels import YTensor, DataType, DataLayout, TensorType
 
-def ytensor_2_numpy(ytensor) :
+
+def ytensor_2_numpy(ytensor):
     shape = ytensor.shape
     shape_len = 1
     for s in shape:
         shape_len *= s
-    out_np = np.frombuffer(ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len)
+    out_np = np.frombuffer(
+        ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len
+    )
     out_np = out_np.reshape(shape)
     return out_np
+
 
 def numpy_dtype_2_ytensor_dtype(datatype):
     if datatype == np.float32:
@@ -28,6 +32,7 @@ def numpy_dtype_2_ytensor_dtype(datatype):
         print("[Error] datatyoe convert wrong: ", datatype)
         return None
 
+
 def torch_dtype_2_ytensor_dtype(datatype):
     if datatype == torch.float32:
         return DataType.float32
@@ -45,6 +50,7 @@ def torch_dtype_2_ytensor_dtype(datatype):
         print("[Error] datatyoe convert wrong: ", datatype)
         return None
 
+
 def ytensor_type_2_numpy(type):
     if type == DataType.float32:
         return np.float32
@@ -58,9 +64,10 @@ def ytensor_type_2_numpy(type):
         return np.bool
     elif type == DataType.float16:
         return np.float16
-    else :
+    else:
         print("[Error] unknown type : ", type)
         raise TypeError
+
 
 def data_type_onnx_to_torch(type):
     if type == 0:
@@ -85,13 +92,15 @@ def data_type_onnx_to_torch(type):
         return torch.uint64
     elif type == 16:
         return torch.bfloat16
-    else :
+    else:
         print("[Error] unknown type : ", type)
         raise TypeError
 
+
 def get_np_data_ptr(npdata):
-    return npdata.__array_interface__['data'][0]
-    
+    return npdata.__array_interface__["data"][0]
+
+
 def data_type_onnx_to_np(type):
     if type == 0:
         return None
@@ -113,23 +122,24 @@ def data_type_onnx_to_np(type):
         return np.uint32
     elif type == 13:
         return np.uint64
-    else :
+    else:
         print("[Error] unknown type : ", type)
         raise TypeError
 
 
 def get_gpu_info():
     from cuda import cudart
+
     _, device_num = cudart.cudaGetDeviceCount()
     if device_num <= 0:
         print("[Error] can not find gpu !!!!")
-    else : 
+    else:
         for i in range(device_num):
             _, prop = cudart.cudaGetDeviceProperties(i)
-            print("****"*20)
+            print("****" * 20)
             print("device index: ", i)
             print("    name: ", str(prop.name))
-            print("    total mem (Gb): ", prop.totalGlobalMem/1024/1024/1024)
-            print("****"*20)
-    
+            print("    total mem (Gb): ", prop.totalGlobalMem / 1024 / 1024 / 1024)
+            print("****" * 20)
+
     return device_num

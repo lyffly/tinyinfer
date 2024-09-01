@@ -7,6 +7,7 @@ from cuda import cudart
 import kernels
 from copy import deepcopy
 
+
 class Node:
     def __init__(self):
         self.name = None
@@ -33,5 +34,3 @@ class Node:
     def print(self):
         print("\nnode name:", self.name)
         print("     type:", self.type)
-
-

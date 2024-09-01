@@ -2,46 +2,55 @@ import onnx
 import simplejson as json
 
 from onnx import numpy_helper
-from onnx import  AttributeProto, TensorProto, GraphProto
+from onnx import AttributeProto, TensorProto, GraphProto
 import numpy as np
 
+
 # int_to_bytes
-def int_to_bytes(num) :
-    return num.to_bytes(8,"little")
+def int_to_bytes(num):
+    return num.to_bytes(8, "little")
+
 
 # bytes_to_int
-def bytes_to_int(bytes) :
-    return int.from_bytes(bytes, byteorder='little')
+def bytes_to_int(bytes):
+    return int.from_bytes(bytes, byteorder="little")
 
-# 
+
+#
 def str_to_bytes(str):
-    return bytes(str, 'utf-8')
+    return bytes(str, "utf-8")
+
 
 # read int from file
 def file_read_int(f, num=8):
     bytes = f.read(num)
     return bytes_to_int(bytes)
 
+
 # write int to file
 def file_write_int(f, num):
     f.write(int_to_bytes(num))
+
 
 # write bytes to file
 def file_write_bytes(f, bytes):
     f.write(bytes)
 
+
 # write str to file
 def file_write_str_with_len(f, str):
-    str_bytes = bytes(str, 'utf-8')
+    str_bytes = bytes(str, "utf-8")
     length = len(str_bytes)
     file_write_int(f, length)
     file_write_bytes(f, str_bytes)
+
 
 # write bytes to file
 def file_write_bytes_with_len(f, bytes):
     length = len(bytes)
     file_write_int(f, length)
     file_write_bytes(f, bytes)
+
 
 def convert_to_bin(name):
     model = onnx.load(name)
@@ -67,7 +76,7 @@ def convert_to_bin(name):
         node_dict = {"inputs": input_edge_list, "outputs": output_edge_list}
         node_dict["name"] = node_name
         node_dict["type"] = node.op_type
-        
+
         attribute_dict = {}
 
         for attr in node.attribute:
@@ -82,7 +91,9 @@ def convert_to_bin(name):
             if attr.type == onnx.AttributeProto().AttributeType.STRING:
                 attribute_dict[attr.name] = str(attr.s.decode("UTF-8"))
             if attr.type == onnx.AttributeProto().AttributeType.STRINGS:
-                attribute_dict[attr.name] = [str(x.decode("UTF-8")) for x in attr.strings]
+                attribute_dict[attr.name] = [
+                    str(x.decode("UTF-8")) for x in attr.strings
+                ]
 
         node_dict["attrbiute"] = attribute_dict
         network["nodes"][node_name] = node_dict
@@ -94,19 +105,19 @@ def convert_to_bin(name):
         np_data = None
         tensor_shape = list(edge.dims)
         edge_dict = {}
-        
+
         edge_dict["shape"] = tensor_shape
         edge_dict["name"] = edge_name
         edge_dict["dtype"] = edge.data_type
-        
-        #edge_dict["data"] = edge.raw_data
+
+        # edge_dict["data"] = edge.raw_data
         np_data = np.frombuffer(edge.raw_data, dtype=np.byte)
-        
+
         all_tensor_datas[edge_name] = np_data.tobytes()
         network["edges"][edge_name] = edge_dict
-    
+
     network_data = json.dumps(network)
-    network_data_bytes = bytes(network_data, 'utf-8')
+    network_data_bytes = bytes(network_data, "utf-8")
     length = len(network_data_bytes)
 
     save_name = name[:-5] + ".bin"
@@ -119,6 +130,3 @@ def convert_to_bin(name):
             file_write_bytes_with_len(f, data)
 
     return save_name
-
-
-

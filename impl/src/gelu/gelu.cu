@@ -38,7 +38,7 @@ bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shap
 
     int block_size = 512;
     int grid_size = ceil_div(length, block_size);
-    
+
     if (dtype=="float32") {
         gelu_forward_kernel1<float><<<grid_size, block_size, 0, stream>>>((float*)in_ptr, (float*)out_ptr, length);
     } else if (dtype=="float16") {

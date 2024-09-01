@@ -83,7 +83,7 @@ struct Handles {
     cublasHandle_t cublas_handle;
 };
 
-const size_t WARP_SIZE=32;
+const size_t WARP_SIZE = 32;
 
 __device__ __forceinline__ float warp_reduce_sum(float x) {
 #pragma unroll

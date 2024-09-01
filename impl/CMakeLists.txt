@@ -20,11 +20,10 @@ file(GLOB SRCS_INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 pybind11_add_module(kernels  ${SRCS_INTERFACE})
 
 # link
-link_directories(${CMAKE_CURRENT_BINARY_DIR}) 
+link_directories(${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(kernels PRIVATE pybind11::module pybind11::embed cuda_kernels)
 set_target_properties(kernels PROPERTIES    PREFIX "${PYTHON_MODULE_PREFIX}"
                                             SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
 
 install(TARGETS kernels LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-

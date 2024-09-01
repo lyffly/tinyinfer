@@ -57,7 +57,7 @@ class YTensor {
     bool Malloc(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
     bool Free();
     bool Zeros(std::vector<int64_t> shape, DataType dtype, DataLayout layout);
-    bool ZerosLike(YTensor &ytensor);
+    bool ZerosLike(YTensor& ytensor);
     bool Float();
     bool Half();
     bool CUDA();
@@ -116,10 +116,10 @@ bool gemm_cublas_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, i
                          std::vector<int> out_shape, std::string dtype, int64_t pstream);
 
 bool gemv_cuda_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
-                         int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
-                         bool transA, bool transB, std::vector<int> in_shape,
-                         std::vector<int> weight_shape, std::vector<int> bias_shape,
-                         std::vector<int> out_shape, std::string dtype, int64_t pstream);
+                       int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
+                       bool transA, bool transB, std::vector<int> in_shape,
+                       std::vector<int> weight_shape, std::vector<int> bias_shape,
+                       std::vector<int> out_shape, std::string dtype, int64_t pstream);
 
 bool gemm_cutlass_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_t out_ptr,
                           int64_t workspace_size, int64_t workspace_ptr, float alpha, float beta,
@@ -180,14 +180,15 @@ void setup_pooling_descriptor(std::vector<int>& kernels, std::vector<int>& paddi
                               std::string layout, void* desc);
 
 bool pooling_cudnn_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
-                     std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
-                     std::vector<int> out_shape, std::string optype, std::string dtype,
-                     std::string layout, int64_t pstream, void* desc);
+                           std::vector<int> paddings, std::vector<int> strides,
+                           std::vector<int> in_shape, std::vector<int> out_shape,
+                           std::string optype, std::string dtype, std::string layout,
+                           int64_t pstream, void* desc);
 
 bool pooling_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> kernels,
-                     std::vector<int> paddings, std::vector<int> strides, std::vector<int> in_shape,
-                     std::vector<int> out_shape, std::string optype, std::string dtype,
-                     std::string layout, int64_t pstream, void* desc);
+                          std::vector<int> paddings, std::vector<int> strides,
+                          std::vector<int> in_shape, std::vector<int> out_shape, std::string optype,
+                          std::string dtype, std::string layout, int64_t pstream, void* desc);
 
 //***********************************************************************************************************
 // convert data layout
@@ -198,17 +199,19 @@ bool layout_convert_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in
 
 //***********************************************************************************************************
 // gelu
-bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape,
-        std::string dtype, std::string layout, int64_t pstream);
+bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+                       std::vector<int> out_shape, std::string dtype, std::string layout,
+                       int64_t pstream);
 
 //***********************************************************************************************************
 // rms norm
 bool rms_norm_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
-                         std::vector<int> out_shape, float eps, std::string dtype, int64_t pstream);
+                           std::vector<int> out_shape, float eps, std::string dtype,
+                           int64_t pstream);
 
 
 //***********************************************************************************************************
 // silu
-bool silu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape,
-        std::string dtype, std::string layout, int64_t pstream);
-
+bool silu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+                       std::vector<int> out_shape, std::string dtype, std::string layout,
+                       int64_t pstream);

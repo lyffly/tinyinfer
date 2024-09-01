@@ -11,31 +11,35 @@ from .onnx_to_bin import convert_to_bin
 from kernels import YTensor, DataType, DataLayout, TensorType
 from .utils import get_np_data_ptr
 
+
 # bytes_to_int
-def bytes_to_int(bytes) :
-    return int.from_bytes(bytes, byteorder='little')
+def bytes_to_int(bytes):
+    return int.from_bytes(bytes, byteorder="little")
 
 
 def bytes_to_str(bytes):
     return bytes.decode("utf-8")
 
-# 
-def str_to_bytes(str):
-    return bytes(str, 'utf-8')
 
-        # FLOAT = 1;   // float
-        # UINT8 = 2;   // uint8_t
-        # INT8 = 3;    // int8_t
-        # UINT16 = 4;  // uint16_t
-        # INT16 = 5;   // int16_t
-        # INT32 = 6;   // int32_t
-        # INT64 = 7;   // int64_t
-        # STRING = 8;  // string
-        # BOOL = 9;    // bool
-        # FLOAT16 = 10;
-        # DOUBLE = 11;
-        # UINT32 = 12;
-        # UINT64 = 13;
+#
+def str_to_bytes(str):
+    return bytes(str, "utf-8")
+
+    # FLOAT = 1;   // float
+    # UINT8 = 2;   // uint8_t
+    # INT8 = 3;    // int8_t
+    # UINT16 = 4;  // uint16_t
+    # INT16 = 5;   // int16_t
+    # INT32 = 6;   // int32_t
+    # INT64 = 7;   // int64_t
+    # STRING = 8;  // string
+    # BOOL = 9;    // bool
+    # FLOAT16 = 10;
+    # DOUBLE = 11;
+    # UINT32 = 12;
+    # UINT64 = 13;
+
+
 def dtype_2_tensor_dtype(datatype):
     if datatype == 1:
         return DataType.float32
@@ -53,12 +57,14 @@ def dtype_2_tensor_dtype(datatype):
         print("[Error] datatyoe convert wrong: ", datatype)
         return None
 
+
 # read int from file
 def file_read_int(f, num=8):
     bytes = f.read(num)
     if not bytes:
         return None
     return bytes_to_int(bytes)
+
 
 def file_read_bytes(f, num=8):
     bytes = f.read(num)
@@ -74,33 +80,34 @@ def file_read_str(f, length=1):
         return None
     return bytes_to_str(bytes)
 
+
 def import_model(in_name, config):
     name = in_name
-    if in_name.endswith(".onnx") :
+    if in_name.endswith(".onnx"):
         name = convert_to_bin(in_name)
-    elif in_name.endswith(".bin") :
+    elif in_name.endswith(".bin"):
         name = in_name
-    else :
+    else:
         raise FileNotFoundError
     with open(name, "rb") as f:
         length = file_read_int(f)
-        #print(length)
+        # print(length)
         bin_data = f.read(length)
         bin_data = bytes_to_str(bin_data)
-        #bin_data = str(bin_data)
+        # bin_data = str(bin_data)
         net_data = json.loads(bin_data)
         is_end = False
-        
+
         net_data["tensor_data"] = {}
-        while (not is_end):
+        while not is_end:
             str_len = file_read_int(f)
-            if not str_len :
+            if not str_len:
                 is_end = True
                 break
             tensorname = file_read_str(f, str_len)
             data_len = file_read_int(f)
             tensordata = file_read_bytes(f, data_len)
-            
+
             net_data["tensor_data"][tensorname] = tensordata
     return net_data
 
@@ -116,7 +123,7 @@ def build_network(bin_data, config):
     # all nodes
     for key in nodes.keys():
         value = nodes[key]
-        
+
         attrbiute = value["attrbiute"]
         if value["type"] == "Conv":
             node = ConvNode()
@@ -227,7 +234,9 @@ def build_network(bin_data, config):
             node.name = value["name"]
             node.type = value["type"]
             params = ResizeParams()
-            params.coordinate_transformation_mode = attrbiute["coordinate_transformation_mode"]
+            params.coordinate_transformation_mode = attrbiute[
+                "coordinate_transformation_mode"
+            ]
             params.cubic_coeff_a = attrbiute["cubic_coeff_a"]
             params.mode = attrbiute["mode"]
             params.nearest_mode = attrbiute["nearest_mode"]
@@ -248,10 +257,12 @@ def build_network(bin_data, config):
             params.perm = attrbiute["perm"]
             node.params = params
         else:
-            print("[Error] node type not impl: ", value["type"], ", name :", value["name"])
+            print(
+                "[Error] node type not impl: ", value["type"], ", name :", value["name"]
+            )
         network.nodes[node.name] = node
         network.run_orders.append(node.name)
-    
+
     # all oonstant edges
     for key in edges:
         value = edges[key]
@@ -260,10 +271,10 @@ def build_network(bin_data, config):
         edge.shape = value["shape"]
         edge.dtype = value["dtype"]
         edge.is_constant = True
-        edge.type = "constant" # constant input output variable
+        edge.type = "constant"  # constant input output variable
         # edge.tensor = torch.zeros(edge.shape, dtype=torch.float, requires_grad=False)
         np_data = None
-        
+
         # FLOAT = 1;   // float
         # UINT8 = 2;   // uint8_t
         # INT8 = 3;    // int8_t
@@ -286,8 +297,8 @@ def build_network(bin_data, config):
         # FLOAT8E5M2FNUZ = 20;  // follows IEEE 754, supports nan, not inf, mostly used for gradients, no negative zero
         # UINT4 = 21;  // Unsigned integer in range [0, 15]
         # INT4 = 22;   // Signed integer in range [-8, 7], using two's-complement representation
-        #print(edge.name, edge.shape, tenor_data[edge.name], np_data)
-        if edge.shape==[0] and tenor_data[edge.name] == None :
+        # print(edge.name, edge.shape, tenor_data[edge.name], np_data)
+        if edge.shape == [0] and tenor_data[edge.name] == None:
             np_data = np.zeros(edge.shape)
         elif edge.dtype == 1:
             np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float32))
@@ -299,7 +310,7 @@ def build_network(bin_data, config):
             np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.bool))
         elif edge.dtype == 10:
             np_data = deepcopy(np.frombuffer(tenor_data[edge.name], dtype=np.float16))
-        else :
+        else:
             print("[Error] data type nor impl !!")
             raise TypeError
         edge.tensor = YTensor()
@@ -310,19 +321,19 @@ def build_network(bin_data, config):
         # edge.tensor = torch.from_numpy(np_data).reshape(edge.shape)
         # edge.tensor.requires_grad_(False)
         network.edges[edge.name] = edge
-    
+
     # networks in out edges
     for name in network.input_names:
         edge = Edge()
         edge.name = name
-        edge.type = "input" # constant input output variable
+        edge.type = "input"  # constant input output variable
         network.edges[edge.name] = edge
     for name in network.output_names:
         edge = Edge()
         edge.name = name
-        edge.type = "output" # constant input output variable
+        edge.type = "output"  # constant input output variable
         network.edges[edge.name] = edge
-    
+
     # node's in out edges
     for key in network.nodes.keys():
         node = network.nodes[key]
@@ -332,15 +343,14 @@ def build_network(bin_data, config):
             if not name in network.edges.keys():
                 edge = Edge()
                 edge.name = name
-                edge.type = "variable" # constant input output variable
+                edge.type = "variable"  # constant input output variable
                 network.edges[edge.name] = edge
         for name in out_names:
             if not name in network.edges.keys():
                 edge = Edge()
                 edge.name = name
-                edge.type = "variable" # constant input output variable
+                edge.type = "variable"  # constant input output variable
                 network.edges[edge.name] = edge
     network.edges_num = len(network.edges)
     network.nodes_num = len(network.nodes)
     return network
-

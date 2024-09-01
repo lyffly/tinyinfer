@@ -1,11 +1,13 @@
 import os
 import numpy as np
 import sys
+
 sys.path.append("../bin")
 
 import kernels
 from cuda import cudart
 import pytest
+
 
 def test_elementwise_add():
     # A + B = C (shape: 2*3*5*5 float)
@@ -13,18 +15,37 @@ def test_elementwise_add():
     _, ptr1 = cudart.cudaMalloc(6 * 25 * 4)
     _, ptr2 = cudart.cudaMalloc(6 * 25 * 4)
 
-    in_data0 = np.random.randn(2,3,5,5).astype(np.float32)
-    in_data1 = np.random.randn(2,3,5,5).astype(np.float32)
-    out_data = np.zeros((2,3,5,5),dtype=np.float32)
+    in_data0 = np.random.randn(2, 3, 5, 5).astype(np.float32)
+    in_data1 = np.random.randn(2, 3, 5, 5).astype(np.float32)
+    out_data = np.zeros((2, 3, 5, 5), dtype=np.float32)
     _, stream = cudart.cudaStreamCreate()
 
-    cudart.cudaMemcpy(ptr0, in_data0.data, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice)
-    cudart.cudaMemcpy(ptr1, in_data1.data, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice)
+    cudart.cudaMemcpy(
+        ptr0, in_data0.data, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice
+    )
+    cudart.cudaMemcpy(
+        ptr1, in_data1.data, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice
+    )
 
-    kernels.elementwise(int(ptr0), int(ptr1), int(ptr2), [2,3,5,5], [2,3,5,5], [2,3,5,5], "float32", "nchw", "Add", stream)
+    kernels.elementwise(
+        int(ptr0),
+        int(ptr1),
+        int(ptr2),
+        [2, 3, 5, 5],
+        [2, 3, 5, 5],
+        [2, 3, 5, 5],
+        "float32",
+        "nchw",
+        "Add",
+        stream,
+    )
 
-    cudart.cudaMemcpy(out_data.data, ptr2, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost)
-    print("np.sum(out_data - in_data0 - in_data1) : ", np.abs(np.sum(out_data - in_data0 - in_data1)))
+    cudart.cudaMemcpy(
+        out_data.data, ptr2, 6 * 25 * 4, cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost
+    )
+    print(
+        "np.sum(out_data - in_data0 - in_data1) : ",
+        np.abs(np.sum(out_data - in_data0 - in_data1)),
+    )
 
     assert np.abs(np.sum(out_data - in_data0 - in_data1)) < 0.1
-

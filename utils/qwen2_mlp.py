@@ -4,6 +4,7 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.onnx import export
 
+
 class Qwen2MLP(nn.Module):
     def __init__(self):
         super().__init__()
@@ -18,15 +19,15 @@ class Qwen2MLP(nn.Module):
         return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
-x = torch.rand(1,512,896)
+x = torch.rand(1, 512, 896)
 mlp = Qwen2MLP()
 mlp.eval()
 
 torch.onnx.export(
-    
-        model         = mlp, 
-        args          = (x,),
-        f             = "mlp.onnx",
-        input_names   = ["input0"],
-        output_names  = ["output0"],
-        opset_version = 12)
+    model=mlp,
+    args=(x,),
+    f="mlp.onnx",
+    input_names=["input0"],
+    output_names=["output0"],
+    opset_version=12,
+)
