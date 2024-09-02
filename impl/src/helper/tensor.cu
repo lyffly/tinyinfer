@@ -33,13 +33,13 @@ int64_t GetProdofVector(std::vector<int64_t> shapes) {
 }
 
 void convert_fp32_to_fp16_cpu(float* in_ptr, half* out_ptr, int length) {
-    for(auto i=0; i< length; i++) {
+    for (auto i = 0; i < length; i++) {
         out_ptr[i] = __float2half(in_ptr[i]);
     }
 }
 
 void convert_fp16_to_fp32_cpu(half* in_ptr, float* out_ptr, int length) {
-    for(auto i=0; i< length; i++) {
+    for (auto i = 0; i < length; i++) {
         out_ptr[i] = __half2float(in_ptr[i]);
     }
 }
@@ -82,7 +82,7 @@ bool YTensor::Free() {
     return true;
 }
 
-bool YTensor::ZerosLike(YTensor &ytensor) {
+bool YTensor::ZerosLike(YTensor& ytensor) {
     return this->Zeros(ytensor.shape, ytensor.data_type, ytensor.layout);
 }
 
@@ -141,7 +141,7 @@ bool YTensor::Float() {
 }
 
 bool YTensor::Half() {
-     if (this->data_type == DataType::HALF) {
+    if (this->data_type == DataType::HALF) {
         return true;
     } else if ((!this->is_gpu) and this->data_type == DataType::FLOAT32) {
         this->data_type = DataType::FLOAT16;
@@ -290,8 +290,8 @@ void YTensor::Print(int64_t len) {
                                    cudaMemcpyDeviceToHost));
     }
     printf("data: ");
-    for (auto i=0; i<len; i++) {
-        if(this->data_type == DataType::FLOAT32) {
+    for (auto i = 0; i < len; i++) {
+        if (this->data_type == DataType::FLOAT32) {
             printf("%f, ", ((float*)this->cpu_ptr)[i]);
         }
     }
@@ -303,9 +303,9 @@ void convert_nchw_to_nhwc_cpu(T* in, T* out, int batch, int channel, int height,
     int hw = height * width;
     int input_i = 0;
     int output_i = 0;
-    for (auto b_i=0; b_i < batch; b_i++) {
-        for (auto c_i=0; c_i < channel; c_i++) {
-            for (auto hw_i=0; hw_i < hw; hw_i++) {
+    for (auto b_i = 0; b_i < batch; b_i++) {
+        for (auto c_i = 0; c_i < channel; c_i++) {
+            for (auto hw_i = 0; hw_i < hw; hw_i++) {
                 input_i = b_i * channel * hw + c_i * hw + hw_i;
                 output_i = b_i * channel * hw + hw_i * channel + c_i;
                 out[output_i] = in[input_i];
@@ -319,9 +319,9 @@ void convert_nhwc_to_nchw_cpu(T* in, T* out, int batch, int channel, int height,
     int hw = height * width;
     int input_i = 0;
     int output_i = 0;
-    for (auto b_i=0; b_i < batch; b_i++) {
-        for (auto c_i=0; c_i < channel; c_i++) {
-            for (auto hw_i=0; hw_i < hw; hw_i++) {
+    for (auto b_i = 0; b_i < batch; b_i++) {
+        for (auto c_i = 0; c_i < channel; c_i++) {
+            for (auto hw_i = 0; hw_i < hw; hw_i++) {
                 output_i = b_i * channel * hw + c_i * hw + hw_i;
                 input_i = b_i * hw * channel + hw_i * channel + c_i;
                 out[output_i] = in[input_i];
@@ -334,29 +334,37 @@ void convert_nhwc_to_nchw_cpu(T* in, T* out, int batch, int channel, int height,
 bool YTensor::ConvertLayout(DataLayout layout) {
     if (this->layout == layout) {
         return true;
-    } else if ((!this->is_gpu) and this->layout == DataLayout::NCHW and layout == DataLayout::NHWC) {
+    } else if ((!this->is_gpu) and this->layout == DataLayout::NCHW and
+               layout == DataLayout::NHWC) {
         if (this->data_type == DataType::FLOAT32) {
             float* tmp = (float*)malloc(this->length * sizeof(float));
-            convert_nchw_to_nhwc_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            convert_nchw_to_nhwc_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0),
+                                            this->shape.at(1), this->shape.at(2),
+                                            this->shape.at(3));
             free(this->cpu_ptr);
             this->cpu_ptr = tmp;
         } else if (this->data_type == DataType::FLOAT16) {
             half* tmp = (half*)malloc(this->length * sizeof(half));
-            convert_nchw_to_nhwc_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            convert_nchw_to_nhwc_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0),
+                                           this->shape.at(1), this->shape.at(2), this->shape.at(3));
             free(this->cpu_ptr);
             this->cpu_ptr = tmp;
         }
         this->data = this->cpu_ptr;
         this->layout = DataLayout::NHWC;
-    } else if ((!this->is_gpu) and this->layout == DataLayout::NHWC and layout == DataLayout::NCHW) {
+    } else if ((!this->is_gpu) and this->layout == DataLayout::NHWC and
+               layout == DataLayout::NCHW) {
         if (this->data_type == DataType::FLOAT32) {
             float* tmp = (float*)malloc(this->length * sizeof(float));
-            convert_nhwc_to_nchw_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            convert_nhwc_to_nchw_cpu<float>((float*)this->cpu_ptr, tmp, this->shape.at(0),
+                                            this->shape.at(1), this->shape.at(2),
+                                            this->shape.at(3));
             free(this->cpu_ptr);
             this->cpu_ptr = tmp;
         } else if (this->data_type == DataType::FLOAT16) {
             half* tmp = (half*)malloc(this->length * sizeof(half));
-            convert_nhwc_to_nchw_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0), this->shape.at(1), this->shape.at(2), this->shape.at(3));
+            convert_nhwc_to_nchw_cpu<half>((half*)this->cpu_ptr, tmp, this->shape.at(0),
+                                           this->shape.at(1), this->shape.at(2), this->shape.at(3));
             free(this->cpu_ptr);
             this->cpu_ptr = tmp;
         }

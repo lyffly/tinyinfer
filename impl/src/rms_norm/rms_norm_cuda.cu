@@ -12,14 +12,14 @@
 // modify from llama.cpp/blob/master/ggml/src/ggml-cuda/norm.cu
 
 template <int block_size, typename T>
-__global__ void rms_norm_cuda_kernel(const T * x, T * dst, const int ncols, const float eps) {
-    const int row = blockIdx.x*blockDim.y + threadIdx.y;
+__global__ void rms_norm_cuda_kernel(const T* x, T* dst, const int ncols, const float eps) {
+    const int row = blockIdx.x * blockDim.y + threadIdx.y;
     const int tid = threadIdx.x;
 
-    float tmp = 0.0f; // partial sum for thread in warp
+    float tmp = 0.0f;    // partial sum for thread in warp
 
     for (int col = tid; col < ncols; col += block_size) {
-        const float xi = float(x[row*ncols + col]);
+        const float xi = float(x[row * ncols + col]);
         tmp += xi * xi;
     }
 
@@ -41,22 +41,25 @@ __global__ void rms_norm_cuda_kernel(const T * x, T * dst, const int ncols, cons
     const float scale = rsqrtf(mean + eps);
 
     for (int col = tid; col < ncols; col += block_size) {
-        dst[row*ncols + col] = T(scale * float(x[row*ncols + col]));
+        dst[row * ncols + col] = T(scale * float(x[row * ncols + col]));
     }
 }
 
 
-void rms_norm_fp32_cuda(const float * x, float * dst, const int ncols, const int nrows, const float eps, cudaStream_t stream) {
+void rms_norm_fp32_cuda(const float* x, float* dst, const int ncols, const int nrows,
+                        const float eps, cudaStream_t stream) {
     if (ncols < 1024) {
         const dim3 block_dims(WARP_SIZE, 1, 1);
-        rms_norm_cuda_kernel<WARP_SIZE, float><<<nrows, block_dims, 0, stream>>>(x, dst, ncols, eps);
+        rms_norm_cuda_kernel<WARP_SIZE, float>
+            <<<nrows, block_dims, 0, stream>>>(x, dst, ncols, eps);
     } else {
         const dim3 block_dims(1024, 1, 1);
         rms_norm_cuda_kernel<1024, float><<<nrows, block_dims, 0, stream>>>(x, dst, ncols, eps);
     }
 }
 
-void rms_norm_fp16_cuda(const half * x, half * dst, const int ncols, const int nrows, const float eps, cudaStream_t stream) {
+void rms_norm_fp16_cuda(const half* x, half* dst, const int ncols, const int nrows, const float eps,
+                        cudaStream_t stream) {
     if (ncols < 1024) {
         const dim3 block_dims(WARP_SIZE, 1, 1);
         rms_norm_cuda_kernel<WARP_SIZE, half><<<nrows, block_dims, 0, stream>>>(x, dst, ncols, eps);
@@ -68,7 +71,8 @@ void rms_norm_fp16_cuda(const half * x, half * dst, const int ncols, const int n
 
 
 bool rms_norm_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
-                         std::vector<int> out_shape, float eps, std::string dtype, int64_t pstream) {
+                           std::vector<int> out_shape, float eps, std::string dtype,
+                           int64_t pstream) {
     cudaStream_t stream = (cudaStream_t)pstream;
     int batch = in_shape.at(0);
     size_t length = 1;
@@ -77,10 +81,10 @@ bool rms_norm_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_
     }
     int nrows = length / batch;
 
-    if ( dtype=="float32" ) {
-        rms_norm_fp32_cuda((float*)in_ptr,  (float*)out_ptr,  batch, nrows,  eps,  stream);
-    } else if ( dtype=="float16" ) {
-        rms_norm_fp16_cuda((half*)in_ptr, (half*)out_ptr,  batch, nrows,  eps,  stream);
+    if (dtype == "float32") {
+        rms_norm_fp32_cuda((float*)in_ptr, (float*)out_ptr, batch, nrows, eps, stream);
+    } else if (dtype == "float16") {
+        rms_norm_fp16_cuda((half*)in_ptr, (half*)out_ptr, batch, nrows, eps, stream);
     } else {
         printf("rms norm not support !!! \n");
     }

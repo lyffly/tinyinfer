@@ -12,7 +12,7 @@
 
 // modify from https://github.com/karpathy/llm.c/blob/master/dev/cuda/gelu_forward.cu
 
-template<typename T>
+template <typename T>
 __global__ void gelu_forward_kernel1(const T* inp, T* out, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N) {
@@ -22,27 +22,30 @@ __global__ void gelu_forward_kernel1(const T* inp, T* out, int N) {
     }
 }
 
-template<class T>
+template <class T>
 __host__ __device__ T ceil_div(T dividend, T divisor) {
-    return (dividend + divisor-1) / divisor;
+    return (dividend + divisor - 1) / divisor;
 }
 
 
-bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape, std::vector<int> out_shape,
-        std::string dtype, std::string layout, int64_t pstream) {
+bool gelu_cuda_backend(int64_t in_ptr, int64_t out_ptr, std::vector<int> in_shape,
+                       std::vector<int> out_shape, std::string dtype, std::string layout,
+                       int64_t pstream) {
     cudaStream_t stream = (cudaStream_t)pstream;
     int length = 1;
-    for (auto& shape :in_shape) {
+    for (auto& shape : in_shape) {
         length *= shape;
     }
 
     int block_size = 512;
     int grid_size = ceil_div(length, block_size);
 
-    if (dtype=="float32") {
-        gelu_forward_kernel1<float><<<grid_size, block_size, 0, stream>>>((float*)in_ptr, (float*)out_ptr, length);
-    } else if (dtype=="float16") {
-        gelu_forward_kernel1<half><<<grid_size, block_size, 0, stream>>>((half*)in_ptr, (half*)out_ptr, length);
+    if (dtype == "float32") {
+        gelu_forward_kernel1<float>
+            <<<grid_size, block_size, 0, stream>>>((float*)in_ptr, (float*)out_ptr, length);
+    } else if (dtype == "float16") {
+        gelu_forward_kernel1<half>
+            <<<grid_size, block_size, 0, stream>>>((half*)in_ptr, (half*)out_ptr, length);
     } else {
         printf("Gelu not support !!! \n");
     }
