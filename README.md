@@ -66,3 +66,4 @@ cuda kernel的实现目前先实现最naive的版本，后续再优化
 8、<https://github.com/NVIDIA/cutlass>  
 9、<https://github.com/NVIDIA/TensorRT>  
 10、<https://github.com/OpenPPL/ppq>  
+11、<https://github.com/vllm-project/vllm>  
