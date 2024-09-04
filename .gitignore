@@ -25,6 +25,7 @@ Qwen2-0.5B-Instruct/
 Qwen2-0.5B-Instruct-GGUF/
 *.onnx
 *.md
+flash_attention/build/
 
 
 # Compiled Object files
