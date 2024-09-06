@@ -45,7 +45,7 @@ class GemmNode(Node):
                     w_edge.shape,
                     bias_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     stream,
                 )
 
@@ -65,13 +65,13 @@ class GemmNode(Node):
                     w_edge.shape,
                     bias_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     stream,
                 )
                 # kernels.gemm_cutlass(in_edge.tensor.data_ptr(), w_edge.tensor.data_ptr(), bias_edge.tensor.data_ptr(), out_edge.tensor.data_ptr(),
                 #         self.workspace_size, self.workspace_ptr, self.params.alpha, self.params.beta,
                 #         self.params.transA, self.params.transB, in_edge.shape, w_edge.shape, bias_edge.shape,
-                #         out_edge.shape, self.network_precision, stream)
+                #         out_edge.shape, self.op_precision, stream)
             elif in_edge.shape[0] == 1:
                 kernels.gemv(
                     in_edge.tensor.data_ptr(),
@@ -88,7 +88,7 @@ class GemmNode(Node):
                     w_edge.shape,
                     [],
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     stream,
                 )
             else:
@@ -107,7 +107,7 @@ class GemmNode(Node):
                     w_edge.shape,
                     [],
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     stream,
                 )
         except:
@@ -134,13 +134,13 @@ class GemmNode(Node):
             _, n = weights_edge.shape
 
         out_edge.shape = [m, n]
-        if self.network_precision == "float32":
+        if self.op_precision == "float32":
             out_edge.dtype = "float32"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-        elif self.network_precision == "float16":
+        elif self.op_precision == "float16":
             out_edge.dtype = "float16"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
@@ -152,5 +152,12 @@ class GemmNode(Node):
         else:
             print("[Error] gemm infer shape not support!!")
 
-    def infer_layouts(self):
-        pass
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False

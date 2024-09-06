@@ -46,7 +46,7 @@ class ConvNode(Node):
                     w_edge.shape,
                     b_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     self.support_layout,
                     stream,
                     self.desc,
@@ -63,7 +63,7 @@ class ConvNode(Node):
                     w_edge.shape,
                     b_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     self.support_layout,
                     self.algo,
                     stream,
@@ -80,7 +80,7 @@ class ConvNode(Node):
                     self.tmp_tensor_in.data_ptr(),
                     in_edge.shape,
                     in_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     "nchw",
                     "nhwc",
                     stream,
@@ -102,7 +102,7 @@ class ConvNode(Node):
                     w_edge.shape,
                     b_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     self.support_layout,
                     stream,
                     self.desc,
@@ -112,7 +112,7 @@ class ConvNode(Node):
                     out_edge.tensor.data_ptr(),
                     out_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     "nhwc",
                     "nchw",
                     stream,
@@ -135,7 +135,7 @@ class ConvNode(Node):
                     w_edge.shape,
                     b_edge.shape,
                     out_edge.shape,
-                    self.network_precision,
+                    self.op_precision,
                     "nchw",
                     stream,
                     self.desc,
@@ -170,15 +170,15 @@ class ConvNode(Node):
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = [n, oc, oh, ow]
-        if self.network_precision == "float32":
+        if self.op_precision == "float32":
             self.support_layout = "nchw"
-        if self.network_precision == "float32":
+        if self.op_precision == "float32":
             out_edge.dtype = "float32"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-        elif self.network_precision == "float16":
+        elif self.op_precision == "float16":
             out_edge.dtype = "float16"
             weights_edge.tensor.half()
             if self.support_layout == "nhwc":
@@ -203,5 +203,12 @@ class ConvNode(Node):
         else:
             print("[Error] conv infer shape not support!!")
 
-    def infer_layouts(self):
-        pass
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False

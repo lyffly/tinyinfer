@@ -22,7 +22,8 @@ class Node:
         self.input_layouts = None
         self.output_layouts = None
         self.all_edges = None
-        self.network_precision = "float32"
+        self.network_precision = "float16"
+        self.op_precision = "float16"
 
     def bind_all_edges(self, edges):
         self.all_edges = edges

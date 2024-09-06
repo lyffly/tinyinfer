@@ -29,7 +29,7 @@ class ActivationNode(Node):
                 self.params.beta,
                 in_edge.shape,
                 out_edge.shape,
-                self.network_precision,
+                self.op_precision,
                 "nchw",
                 self.type,
                 stream,
@@ -43,13 +43,13 @@ class ActivationNode(Node):
 
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.shape = in_edge.shape
-        if self.network_precision == "float32":
+        if self.op_precision == "float32":
             out_edge.dtype = "float32"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-        elif self.network_precision == "float16":
+        elif self.op_precision == "float16":
             out_edge.dtype = "float16"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
@@ -58,5 +58,27 @@ class ActivationNode(Node):
         else:
             print("[Error] activation infer shape not support!!")
 
-    def infer_layouts(self):
+    def set_op_dtypes(self):
+        pass
+    
+    def set_op_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.shape = in_edge.shape
+        pass
+    
+    def set_op_layout(self, layout):
+        pass
+
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False
+    
+    def setup_op_tensors(self):
         pass

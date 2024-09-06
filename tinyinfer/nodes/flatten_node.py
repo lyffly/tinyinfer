@@ -26,14 +26,14 @@ class FlattenNode(Node):
         in_edge = self.all_edges[self.input_names[0]]
         n, c, h, w = in_edge.shape
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.axis == 1 and self.network_precision == "float32":
+        if self.params.axis == 1 and self.op_precision == "float32":
             out_edge.shape = [n, c * h * w]
             out_edge.dtype = "float32"
             ytensor = YTensor()
             ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
             ytensor.tensortype = TensorType.variable
             out_edge.tensor = ytensor
-        elif self.params.axis == 1 and self.network_precision == "float16":
+        elif self.params.axis == 1 and self.op_precision == "float16":
             out_edge.shape = [n, c * h * w]
             out_edge.dtype = "float16"
             ytensor = YTensor()
@@ -43,5 +43,12 @@ class FlattenNode(Node):
         else:
             print("[Error] flatten infer shape not support!!")
 
-    def infer_layouts(self):
-        pass
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False

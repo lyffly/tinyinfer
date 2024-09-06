@@ -42,11 +42,26 @@ class Network:
         # 设置模型精度时，设置node的精度
         for nodename in self.run_orders:
             if self.config.fp32:
-                self.nodes[nodename].network_precision = "float32"
+                if self.nodes[nodename].get_op_support_precision("float32"):
+                    self.nodes[nodename].op_precision = "float32"
+                else :
+                    raise IOError
             if self.config.fp16:
-                self.nodes[nodename].network_precision = "float16"
+                if self.nodes[nodename].get_op_support_precision("float16"):
+                    self.nodes[nodename].op_precision = "float16"
+                elif self.nodes[nodename].get_op_support_precision("float32"):
+                    self.nodes[nodename].op_precision = "float32"
+                else :
+                    raise IOError
             elif self.config.int8:
-                self.nodes[nodename].network_precision = "int8"
+                if self.nodes[nodename].get_op_support_precision("int8"):
+                    self.nodes[nodename].op_precision = "int8"
+                elif self.nodes[nodename].get_op_support_precision("float16"):
+                    self.nodes[nodename].op_precision = "float16"
+                elif self.nodes[nodename].get_op_support_precision("float32"):
+                    self.nodes[nodename].op_precision = "float32"
+                else :
+                    raise IOError
         # 设置模型精度时，在输入插入转换节点
         if self.config.fp16:
             for io_name, io_edge in copy.copy(self.edges).items():

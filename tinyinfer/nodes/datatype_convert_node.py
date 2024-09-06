@@ -59,3 +59,13 @@ class CastNode(Node):
 
     def infer_layouts(self):
         pass
+    
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False

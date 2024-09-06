@@ -37,7 +37,7 @@ class PoolNode(Node):
                     in_edge.shape,
                     out_edge.shape,
                     self.type,
-                    self.network_precision,
+                    self.op_precision,
                     "nchw",
                     stream,
                     self.desc,
@@ -56,7 +56,7 @@ class PoolNode(Node):
                     in_edge.shape,
                     out_edge.shape,
                     self.type,
-                    self.network_precision,
+                    self.op_precision,
                     "nchw",
                     stream,
                     self.desc,
@@ -71,13 +71,13 @@ class PoolNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.type == "GlobalAveragePool":
             out_edge.shape = [n, c, 1, 1]
-            if self.network_precision == "float32":
+            if self.op_precision == "float32":
                 out_edge.dtype = "float32"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-            elif self.network_precision == "float16":
+            elif self.op_precision == "float16":
                 out_edge.dtype = "float16"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
@@ -98,13 +98,13 @@ class PoolNode(Node):
             oh = math.floor((h + padh * 2 - ((kh - 1) * dilationh + 1)) / strideh + 1)
             ow = math.floor((w + padw * 2 - ((kw - 1) * dilationw + 1)) / stridew + 1)
             out_edge.shape = [n, c, oh, ow]
-            if self.network_precision == "float32":
+            if self.op_precision == "float32":
                 out_edge.dtype = "float32"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
                 ytensor.tensortype = TensorType.variable
                 out_edge.tensor = ytensor
-            elif self.network_precision == "float16":
+            elif self.op_precision == "float16":
                 out_edge.dtype = "float16"
                 ytensor = YTensor()
                 ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
@@ -119,10 +119,17 @@ class PoolNode(Node):
             in_edge.shape,
             out_edge.shape,
             self.type,
-            self.network_precision,
+            self.op_precision,
             "nchw",
             self.desc,
         )
 
-    def infer_layouts(self):
-        pass
+    def set_op_precision(self, dtype:str):
+        self.op_precision = dtype
+    
+    def get_op_support_precision(self, precision):
+        supported = ["float32", "float16"]
+        if precision in supported:
+            return True
+        else:
+            return False
