@@ -173,22 +173,14 @@ class ConvNode(Node):
         if self.op_precision == "float32":
             self.support_layout = "nchw"
         if self.op_precision == "float32":
-            out_edge.dtype = "float32"
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float32")
         elif self.op_precision == "float16":
-            out_edge.dtype = "float16"
             weights_edge.tensor.half()
             if self.support_layout == "nhwc":
                 weights_edge.tensor.convert_layout(DataLayout.nhwc)
             if bias_edge:
                 bias_edge.tensor.half()
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float16")
             # 临时用 额外的转换 fix later
             tmp_in_tensor = YTensor()
             tmp_in_tensor.zeros_like(in_edge.tensor)

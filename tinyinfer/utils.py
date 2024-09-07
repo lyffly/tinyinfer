@@ -32,6 +32,22 @@ def numpy_dtype_2_ytensor_dtype(datatype):
         print("[Error] datatyoe convert wrong: ", datatype)
         return None
 
+def str_dtype_2_ytensor_dtype(datatype):
+    if datatype == "float32":
+        return DataType.float32
+    elif datatype == "float16":
+        return DataType.float16
+    elif datatype == "bool":
+        return DataType.bool
+    elif datatype == "int32":
+        return DataType.int32
+    elif datatype == "int64":
+        return DataType.int64
+    elif datatype == "int8":
+        return DataType.int8
+    else:
+        print("[Error] datatyoe convert wrong: ", datatype)
+        return None
 
 def torch_dtype_2_ytensor_dtype(datatype):
     if datatype == torch.float32:
@@ -126,6 +142,15 @@ def data_type_onnx_to_np(type):
         print("[Error] unknown type : ", type)
         raise TypeError
 
+def str_layout_2_ytensor_layout(layout):
+    if layout == "nchw":
+        return DataLayout.nchw
+    elif layout == "nhwc":
+        return DataLayout.nhwc
+    else:
+        print("[Error] data layout convert wrong: ", layout)
+        return None
+
 
 def get_gpu_info():
     from cuda import cudart
@@ -143,3 +168,12 @@ def get_gpu_info():
             print("****" * 20)
 
     return device_num
+
+def get_shapes_length(shapes: list):
+    length = 1
+    for shape in shapes:
+        if shape == 0:
+            return 1
+        else :
+            length *= shape
+    return length

@@ -28,18 +28,10 @@ class FlattenNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         if self.params.axis == 1 and self.op_precision == "float32":
             out_edge.shape = [n, c * h * w]
-            out_edge.dtype = "float32"
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float32")
         elif self.params.axis == 1 and self.op_precision == "float16":
             out_edge.shape = [n, c * h * w]
-            out_edge.dtype = "float16"
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float16")
         else:
             print("[Error] flatten infer shape not support!!")
 
