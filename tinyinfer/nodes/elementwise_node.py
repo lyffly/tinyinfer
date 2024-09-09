@@ -47,12 +47,8 @@ class ElementwiseNode(Node):
             else:
                 raise ModuleNotFoundError
 
-    def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
-        n, c, h, w = in_edge.shape
-
+    def setup_op_out_edges(self):
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.set_shape(in_edge.shape)
         if self.op_precision == "float32":
             out_edge.create(out_edge.shape, "float32")
         elif self.op_precision == "float16":

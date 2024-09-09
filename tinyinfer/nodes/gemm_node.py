@@ -120,20 +120,12 @@ class GemmNode(Node):
             except:
                 pass
 
-    def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
+    def setup_op_out_edges(self):
         weights_edge = self.all_edges[self.input_names[1]]
         if len(self.input_names) > 2:
             bias_edge = self.all_edges[self.input_names[2]]
-        m, k = in_edge.shape
-        n = 0
         out_edge = self.all_edges[self.output_names[0]]
-        if self.params.transB == 1:
-            n, _ = weights_edge.shape
-        else:
-            _, n = weights_edge.shape
 
-        out_edge.shape = [m, n]
         if self.op_precision == "float32":
             out_edge.create(out_edge.shape, "float32")
         elif self.op_precision == "float16":

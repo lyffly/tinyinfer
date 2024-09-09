@@ -5,7 +5,7 @@ import copy
 import torch
 from kernels import YTensor, DataType, DataLayout, TensorType
 from .utils import numpy_dtype_2_ytensor_dtype, get_np_data_ptr
-
+from cuda import cudart
 
 class Network:
     def __init__(self):
@@ -20,9 +20,7 @@ class Network:
         self.edges_num = 0
         self.stream = None
 
-    def prepare(self, ins={}):
-        from cuda import cudart
-
+    def prepare(self, ins:list, max_ins=None):
         _, self.stream = cudart.cudaStreamCreate()
         self.bind_all_edges()
         for key in ins.keys():
@@ -105,7 +103,8 @@ class Network:
         self.bind_all_edges()
         # 形状推导 tensor 进行绑定
         for nodename in self.run_orders:
-            self.nodes[nodename].infer_shapes()
+            self.nodes[nodename].set_op_shapes()
+            self.nodes[nodename].setup_op_out_edges()
             if self.config.log_verbose:
                 print("[infer shape] node name: ", nodename)
                 out_edge = self.edges[self.nodes[nodename].output_names[0]]
@@ -126,7 +125,8 @@ class Network:
         #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
         #     elif self.edges[key].type == "output" and self.config.use_gpu:
         #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
-
+        
+        # 每次开始前获取最新的形状
         for nodename in self.run_orders:
             self.nodes[nodename].set_op_shapes()
             if self.config.log_verbose:

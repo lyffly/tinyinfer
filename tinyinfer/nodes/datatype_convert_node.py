@@ -37,25 +37,17 @@ class CastNode(Node):
         except:
             raise IOError
 
-    def infer_shapes(self):
+    def setup_op_out_edges(self):
         in_edge = self.all_edges[self.input_names[0]]
         in_edge.dtype = self.in_dtype
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.shape = in_edge.shape
         if self.out_dtype == "float32":
-            out_edge.dtype = "float32"
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float32, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float32")
         elif self.out_dtype == "float16":
-            out_edge.dtype = "float16"
-            ytensor = YTensor()
-            ytensor.zeros(out_edge.shape, DataType.float16, DataLayout.nchw)
-            ytensor.tensortype = TensorType.variable
-            out_edge.tensor = ytensor
+            out_edge.create(out_edge.shape, "float16")
         else:
             print("[Error] Cast infer shape not support!!")
+            raise IOError
 
     def infer_layouts(self):
         pass

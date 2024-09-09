@@ -22,15 +22,11 @@ class FlattenNode(Node):
         # out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
         out_edge.tensor.set_data_ptr(in_edge.tensor.data_ptr(), True)
 
-    def infer_shapes(self):
-        in_edge = self.all_edges[self.input_names[0]]
-        n, c, h, w = in_edge.shape
+    def setup_op_out_edges(self):
         out_edge = self.all_edges[self.output_names[0]]
         if self.params.axis == 1 and self.op_precision == "float32":
-            out_edge.shape = [n, c * h * w]
             out_edge.create(out_edge.shape, "float32")
         elif self.params.axis == 1 and self.op_precision == "float16":
-            out_edge.shape = [n, c * h * w]
             out_edge.create(out_edge.shape, "float16")
         else:
             print("[Error] flatten infer shape not support!!")
