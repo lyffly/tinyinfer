@@ -153,3 +153,15 @@ class GemmNode(Node):
             return True
         else:
             return False
+    
+    def set_op_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        weights_edge = self.all_edges[self.input_names[1]]
+        m, k = in_edge.shape
+        n = 0
+        if self.params.transB == 1:
+            n, _ = weights_edge.shape
+        else:
+            _, n = weights_edge.shape
+        out_edge.set_shape([m, n])

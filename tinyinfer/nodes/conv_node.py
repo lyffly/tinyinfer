@@ -169,7 +169,8 @@ class ConvNode(Node):
         )
 
         out_edge = self.all_edges[self.output_names[0]]
-        out_edge.shape = [n, oc, oh, ow]
+        out_shape = [n, oc, oh, ow]
+        out_edge.set_shape(out_shape)
         if self.op_precision == "float32":
             self.support_layout = "nchw"
         if self.op_precision == "float32":
@@ -204,3 +205,26 @@ class ConvNode(Node):
             return True
         else:
             return False
+
+    def set_op_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        weights_edge = self.all_edges[self.input_names[1]]
+        n, c, h, w = in_edge.shape
+        oc, c, kh, kw = weights_edge.shape
+        self.inc = c
+        self.outc = oc
+        padh = (self.params.pads[0] + self.params.pads[2]) / 2
+        padw = (self.params.pads[1] + self.params.pads[3]) / 2
+        oh = math.floor(
+            (h + 2 * padh - self.params.dilations[0] * (kh - 1) - 1)
+            / self.params.strides[0]
+            + 1
+        )
+        ow = math.floor(
+            (w + 2 * padw - self.params.dilations[1] * (kw - 1) - 1)
+            / self.params.strides[1]
+            + 1
+        )
+        out_edge = self.all_edges[self.output_names[0]]
+        out_shape = [n, oc, oh, ow]
+        out_edge.set_shape(out_shape)

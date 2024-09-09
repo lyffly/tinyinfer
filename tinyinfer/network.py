@@ -127,6 +127,12 @@ class Network:
         #     elif self.edges[key].type == "output" and self.config.use_gpu:
         #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
 
+        for nodename in self.run_orders:
+            self.nodes[nodename].set_op_shapes()
+            if self.config.log_verbose:
+                out_edge = self.nodes[nodename].all_edges[self.nodes[nodename].output_names[0]]
+                print("[set output shape] node name: {0}  -> out0 shape: {1}".format(nodename, out_edge.shape))
+        
         # 进行每一个node的推理
         for nodename in self.run_orders:
             if self.config.log_verbose:

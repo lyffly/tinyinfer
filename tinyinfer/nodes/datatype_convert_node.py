@@ -69,3 +69,8 @@ class CastNode(Node):
             return True
         else:
             return False
+    
+    def set_op_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.set_shape(in_edge.shape)

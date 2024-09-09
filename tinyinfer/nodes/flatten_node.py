@@ -44,3 +44,12 @@ class FlattenNode(Node):
             return True
         else:
             return False
+    
+    def set_op_shapes(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        out_edge = self.all_edges[self.output_names[0]]
+        n, c, h, w = in_edge.shape
+        if self.params.axis == 1:
+            out_edge.set_shape([n, c * h * w])
+        else:
+            print("[Error] flatten infer shape not support!!")
