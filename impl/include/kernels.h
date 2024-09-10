@@ -38,6 +38,7 @@ class YTensor {
    public:
     int64_t rank;
     std::vector<int64_t> shape;
+    std::vector<int64_t> max_shape;
     std::vector<int64_t> stride;
     void* data;
     bool is_gpu;
@@ -45,6 +46,7 @@ class YTensor {
     DataType data_type;
     DataLayout layout;
     int64_t length;
+    int64_t max_length;
     int64_t sizeoftype;
     float scale;
     float* channel_scale;
@@ -67,6 +69,8 @@ class YTensor {
     void SetDataPtr(int64_t ptr, bool is_gpu);
     std::vector<int64_t> GetShape();
     void SetShape(std::vector<int64_t> shape);
+    std::vector<int64_t> GetMaxShape();
+    void SetMaxShape(std::vector<int64_t> shape);
     bool GetIsGPU();
     void SetIsGPU(bool is_gpu);
     DataType GetDataType();

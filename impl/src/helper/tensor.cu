@@ -232,6 +232,15 @@ std::vector<int64_t> YTensor::GetShape() {
     return this->shape;
 }
 
+void YTensor::SetMaxShape(std::vector<int64_t> max_shape) {
+    this->max_shape = max_shape;
+    this->max_length = GetProdofVector(max_shape);
+}
+
+std::vector<int64_t> YTensor::GetMaxShape() {
+    return this->max_shape;
+}
+
 bool YTensor::GetIsGPU() {
     return this->is_gpu;
 }

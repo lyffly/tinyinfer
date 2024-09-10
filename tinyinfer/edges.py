@@ -21,16 +21,20 @@ class Edge:
             self.max_shape = shape
         self.shape = shape
         if self.tensor:
-            self.tensor.shape = self.max_shape
+            self.tensor.max_shape = self.max_shape
 
     def create(self, shape, dtype="float32", layout="nchw") :
         self.set_shape(shape)
         self.dtype = dtype
         self.layout = layout
-        
         ytensor = YTensor()
         tensor_dtype = str_dtype_2_ytensor_dtype(self.dtype)
         tensor_layout = str_layout_2_ytensor_layout(self.layout)
-        ytensor.zeros(self.max_shape, tensor_dtype, tensor_layout)
+        ytensor.zeros(self.shape, tensor_dtype, tensor_layout)
         ytensor.tensortype = TensorType.variable
         self.tensor = ytensor
+        
+        if len(self.max_shape) > 0:
+            self.tensor.max_shape = self.max_shape
+        else:
+            self.tensor.max_shape = self.shape

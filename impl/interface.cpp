@@ -59,6 +59,7 @@ PYBIND11_MODULE(kernels, m) {
     py::class_<YTensor>(m, "YTensor")
         .def(py::init())
         .def_property("shape", &YTensor::GetShape, &YTensor::SetShape)
+        .def_property("max_shape", &YTensor::GetMaxShape, &YTensor::SetMaxShape)
         .def_property("is_gpu", &YTensor::GetIsGPU, &YTensor::SetIsGPU)
         .def_property("dtype", &YTensor::GetDataType, &YTensor::SetDataType)
         .def_property_readonly("layout", &YTensor::GetDataLayout)
