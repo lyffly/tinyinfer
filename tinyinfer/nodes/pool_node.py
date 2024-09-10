@@ -99,7 +99,12 @@ class PoolNode(Node):
         )
 
     def set_op_precision(self, dtype:str):
-        self.op_precision = dtype
+        supported = ["float32", "float16"]
+        in_edge = self.all_edges[self.input_names[0]]
+        if in_edge.dtype in supported :
+            self.op_precision = dtype
+        else :
+            self.op_precision = in_edge.dtype
     
     def get_op_support_precision(self, precision):
         supported = ["float32", "float16"]
