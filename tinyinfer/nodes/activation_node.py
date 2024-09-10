@@ -64,6 +64,10 @@ class ActivationNode(Node):
             self.op_precision = dtype
         else :
             self.op_precision = in_edge.dtype
-    
+
+    def set_op_max_shapes(self):
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.max_shape = out_edge.shape
+        
     def setup_op_tensors(self):
         pass

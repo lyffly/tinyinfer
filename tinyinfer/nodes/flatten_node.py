@@ -48,3 +48,7 @@ class FlattenNode(Node):
             out_edge.set_shape([n, c * h * w])
         else:
             print("[Error] flatten infer shape not support!!")
+
+    def set_op_max_shapes(self):
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.max_shape = out_edge.shape

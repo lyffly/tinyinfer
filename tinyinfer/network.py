@@ -19,8 +19,9 @@ class Network:
         self.nodes_num = 0
         self.edges_num = 0
         self.stream = None
+        self.ins_max_shape = None
 
-    def prepare(self, ins:list, max_ins=None):
+    def prepare(self, ins:list, ins_max_shape=None):
         _, self.stream = cudart.cudaStreamCreate()
         self.bind_all_edges()
         for key in ins.keys():
@@ -89,14 +90,30 @@ class Network:
                             ] = to_add_edge.name
                             self.run_orders.append(to_add_node.name)
         self.bind_all_edges()
+        # 设置最大形状
+        self.ins_max_shape = ins_max_shape
+        if self.ins_max_shape is not None:
+            for key in ins.keys():
+                self.edges[key].shape = self.ins_max_shape[key]
+                self.edges[key].max_shape = self.ins_max_shape[key]
+            for nodename in self.run_orders:
+                self.nodes[nodename].set_op_shapes()
+                self.nodes[nodename].set_op_max_shapes()
+                if self.config.log_verbose:
+                    print("[infer shape] node name: ", nodename)
+                    out_edge = self.edges[self.nodes[nodename].output_names[0]]
+                    print("     ---> out max shape: ", out_edge.shape)
         # 形状推导 tensor 进行绑定
+        for key in ins.keys():
+            in_np = ins[key]
+            self.edges[key].shape = in_np.shape
         for nodename in self.run_orders:
             self.nodes[nodename].set_op_shapes()
             self.nodes[nodename].setup_op_out_edges()
             if self.config.log_verbose:
                 print("[infer shape] node name: ", nodename)
                 out_edge = self.edges[self.nodes[nodename].output_names[0]]
-                print("     -> ", out_edge.shape, out_edge.dtype)
+                print("     ---> out shape: ", out_edge.shape, out_edge.dtype)
         # move edge data to gpu
         for key in self.edges.keys():
             if self.edges[key].type == "input" and self.config.use_gpu:

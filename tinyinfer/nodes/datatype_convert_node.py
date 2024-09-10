@@ -64,3 +64,7 @@ class CastNode(Node):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.set_shape(in_edge.shape)
+    
+    def set_op_max_shapes(self):
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.max_shape = out_edge.shape

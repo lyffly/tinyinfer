@@ -118,7 +118,7 @@ class PoolNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         n, c, h, w = in_edge.shape
         if self.type == "GlobalAveragePool":
-            n, c, h, w = in_edge.tensor.shape
+            n, c, h, w = in_edge.shape
             out_edge.set_shape([n, c, 1, 1])
         elif self.type == "MaxPool":
             padh = self.params.pads[0]
@@ -135,3 +135,7 @@ class PoolNode(Node):
         else :
             print("[Error] pool not support yet !!")
             raise IOError
+
+    def set_op_max_shapes(self):
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.max_shape = out_edge.shape

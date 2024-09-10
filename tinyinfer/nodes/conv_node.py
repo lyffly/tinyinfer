@@ -207,3 +207,7 @@ class ConvNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         out_shape = [n, oc, oh, ow]
         out_edge.set_shape(out_shape)
+    
+    def set_op_max_shapes(self):
+        out_edge = self.all_edges[self.output_names[0]]
+        out_edge.max_shape = out_edge.shape
