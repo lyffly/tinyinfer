@@ -48,9 +48,8 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     end = time.time()
     fps = float(loops) / (end - start)
-    results["output"].cpu()
     out_ytensor = results["output"]
-    out_ytensor.print(10)
+    # out_ytensor.print(10)
     outdata = ytensor_2_numpy(out_ytensor)
     out_tensor = softmax(outdata, axis=1)
     print("out shape:", out_tensor.shape)

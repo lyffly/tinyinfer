@@ -146,14 +146,12 @@ class Network:
         # 获取输出，输出数转到cpu
         outs = {}
         for name in self.output_names:
-            # out_tensor = self.edges[name].tensor
             # if self.config.use_gpu:
-            #     out_tensor = out_tensor.cpu()
-            # outs[name] = out_tensor
+            #     self.edges[name].tensor.cpu()
             outs[name] = self.edges[name].tensor
 
         if self.config.log_verbose:
-            print("[run] network run end ! \n", "*" * 80)
+            print("[run] network run end ! \n\n", "*" * 80)
 
         return outs
 

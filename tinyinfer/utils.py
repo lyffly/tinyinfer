@@ -8,6 +8,8 @@ def ytensor_2_numpy(ytensor):
     shape_len = 1
     for s in shape:
         shape_len *= s
+    if ytensor.is_gpu:
+        ytensor.cpu()
     out_np = np.frombuffer(
         ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len
     )
