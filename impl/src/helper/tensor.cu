@@ -202,7 +202,12 @@ bool YTensor::CPU() {
 }
 
 bool YTensor::CopyNumpyData(int64_t ptr) {
-    memcpy((void*)this->cpu_ptr, (void*)ptr, this->sizeoftype * this->length);
+    if (this->is_gpu) {
+        cudaMemcpy((void*)this->gpu_ptr, (void*)ptr, this->sizeoftype * this->length,
+                   cudaMemcpyHostToDevice);
+    } else {
+        memcpy((void*)this->cpu_ptr, (void*)ptr, this->sizeoftype * this->length);
+    }
     return true;
 }
 

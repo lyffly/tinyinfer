@@ -30,8 +30,11 @@ if __name__ == "__main__":
     model_data = import_model(onnx_name, config)
     network = build_network(model_data, config)
 
+    inputs_zeros = {"images": np.zeros((1,3,224,224)).astype(np.float32)}
+    inputs_max_shape = {"images": [16,3,224,224]}
+    network.prepare(inputs_zeros, inputs_max_shape)
+    
     inputs = {"images": img.numpy()}
-    network.prepare(inputs)
     # warup
     for i in range(5):
         results = network.run(inputs)

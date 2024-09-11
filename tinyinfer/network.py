@@ -36,7 +36,6 @@ class Network:
             )
             ytensor.tensortype = TensorType.input
             ytensor.name = key
-            ytensor.copy_numpy_data(get_np_data_ptr(in_np))
             self.edges[key].tensor = ytensor
         # 设置模型精度时，设置node的精度
         for nodename in self.run_orders:
@@ -96,6 +95,7 @@ class Network:
             for key in ins.keys():
                 self.edges[key].shape = self.ins_max_shape[key]
                 self.edges[key].max_shape = self.ins_max_shape[key]
+                self.edges[key].tensor.max_shape = self.ins_max_shape[key]
             for nodename in self.run_orders:
                 self.nodes[nodename].set_op_shapes()
                 self.nodes[nodename].set_op_max_shapes()
@@ -124,12 +124,12 @@ class Network:
                 self.edges[key].tensor.cuda()
 
     def run(self, ins={}):
-        # 把输入输出数据转到gpu
-        # for key in self.edges.keys():
-        #     if self.edges[key].type == "input" and self.config.use_gpu:
-        #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
-        #     elif self.edges[key].type == "output" and self.config.use_gpu:
-        #         self.edges[key].tensor = self.edges[key].tensor.to(self.config.gpu_device)
+        # 把输入数据转到gpu
+        for key in self.edges.keys():
+            if self.edges[key].type == "input" and self.config.use_gpu:
+                in_np = ins[key]
+                self.edges[key].tensor.copy_numpy_data(get_np_data_ptr(in_np))
+                self.edges[key].shape = in_np.shape
         
         # 每次开始前获取最新的形状
         for nodename in self.run_orders:
