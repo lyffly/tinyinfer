@@ -9,9 +9,9 @@ class MemBlock:
         return str(self)
 
     def __str__(self):
-        p_str = "*{0},s={1},e={2}".format(self.name, self.start, self.start + self.size)
+        p_str = "*{0},s={1},e={2}\n".format(self.name, self.start, self.start + self.size)
         if self.is_free:
-            p_str = "*FREE*,s={0},e={1}".format(self.start, self.start + self.size)
+            p_str = "*FREE*,s={0},e={1}\n".format(self.start, self.start + self.size)
         return p_str
 
 
@@ -105,7 +105,37 @@ class MemPool:
                 self.block_list[bi].start = self.block_list[bi - 1].start
                 self.block_list[bi].name = ""
                 del self.block_list[bi - 1]
+    
+    def update_nodes(self, nodes, edges_sizes):
+        for node_name, value in nodes.items():
+            for name in value["in_names"]:
+                if name not in self.edge_uses.keys():
+                    self.edge_uses[name] = 0
+                self.edge_uses[name] += 1
+        for node_name, value in nodes.items():
+            # print("\nnode name : ", node_name)
+            sum = 0
+            # print("before malloc : ", str(self))
 
+            for name in value["in_names"]:
+                if name in self.names:
+                    continue
+                sum += edges_sizes[name]
+                self.malloc(name, edges_sizes[name])
+            for name in value["out_names"]:
+                if name in self.names:
+                    continue
+                sum += edges_sizes[name]
+                self.malloc(name, edges_sizes[name])
+            # print("after malloc : ", self)
+
+            for name in value["in_names"]:
+                self.edge_uses[name] -= 1
+            self.check_free()
+            # print("after set block free :", self)
+        # print("\nall edge memory start : ", self.edge_mem_start)
+        # print("memory pool size : ", self.size)
+        return self.size, self.edge_mem_start
 
 if __name__ == "__main__":
     nodes = {
@@ -158,39 +188,10 @@ if __name__ == "__main__":
         "work3": 4000,
     }
 
-    print(nodes)
-    print(edges_sizes)
+    # print(nodes)
+    # print(edges_sizes)
     pool = MemPool()
-
-    # use count
-    pool.edge_uses = {}
-    for node_name, value in nodes.items():
-        for name in value["in_names"]:
-            if name not in pool.edge_uses.keys():
-                pool.edge_uses[name] = 0
-            pool.edge_uses[name] += 1
-
-    for node_name, value in nodes.items():
-        print("\nnode name : ", node_name)
-        sum = 0
-        print("before malloc : ", str(pool))
-
-        for name in value["in_names"]:
-            if name in pool.names:
-                continue
-            sum += edges_sizes[name]
-            pool.malloc(name, edges_sizes[name])
-        for name in value["out_names"]:
-            if name in pool.names:
-                continue
-            sum += edges_sizes[name]
-            pool.malloc(name, edges_sizes[name])
-        print("after malloc : ", pool)
-
-        for name in value["in_names"]:
-            pool.edge_uses[name] -= 1
-        pool.check_free()
-        print("after set block free :", pool)
+    pool.update_nodes(nodes, edges_sizes)
 
     print("\nall edge memory start : ", pool.edge_mem_start)
     print("memory pool size : ", pool.size)

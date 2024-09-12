@@ -141,7 +141,6 @@ class ConvNode(Node):
                     self.desc,
                 )
 
-            # print("cudnn : ",out_edge.tensor[0][0][0][:10])
         except:
             raise IOError
 

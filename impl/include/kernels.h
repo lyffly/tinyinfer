@@ -51,6 +51,7 @@ class YTensor {
     float scale;
     float* channel_scale;
     int64_t data_len;
+    int64_t mem_len;
     std::string name;
 
    public:
@@ -66,7 +67,7 @@ class YTensor {
     bool CPU();
     bool CopyNumpyData(int64_t ptr);
     int64_t GetDataPtr();
-    void SetDataPtr(int64_t ptr, bool is_gpu);
+    void SetDataPtr(int64_t ptr, bool is_gpu, bool is_free_original_data);
     std::vector<int64_t> GetShape();
     void SetShape(std::vector<int64_t> shape);
     std::vector<int64_t> GetMaxShape();
@@ -82,6 +83,8 @@ class YTensor {
     int64_t GetRank();
     void SetRank(int64_t rank);
     int64_t GetDataLen();
+    int64_t GetMemLen();
+    int64_t GetMemPtr();
     void SetName(std::string name);
     std::string GetName();
     void Print(int64_t len);

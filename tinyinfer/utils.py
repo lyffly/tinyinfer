@@ -1,18 +1,23 @@
 import torch
 import numpy as np
 from kernels import YTensor, DataType, DataLayout, TensorType
-
+from cuda import cudart
 
 def ytensor_2_numpy(ytensor):
     shape = ytensor.shape
     shape_len = 1
     for s in shape:
         shape_len *= s
-    if ytensor.is_gpu:
-        ytensor.cpu()
-    out_np = np.frombuffer(
-        ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len
+    # if ytensor.is_gpu:
+    #     ytensor.cpu()
+    # out_np = np.frombuffer(
+    #     ytensor.memoryview(), ytensor_type_2_numpy(ytensor.dtype), shape_len
+    # )
+    out_np = np.zeros(shape, dtype = ytensor_type_2_numpy(ytensor.dtype))
+    cudart.cudaMemcpy(
+        out_np.data, ytensor.data_ptr(), shape_len * ytensor_type_len(ytensor.dtype), cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost
     )
+    
     out_np = out_np.reshape(shape)
     return out_np
 
@@ -82,6 +87,23 @@ def ytensor_type_2_numpy(type):
         return np.bool
     elif type == DataType.float16:
         return np.float16
+    else:
+        print("[Error] unknown type : ", type)
+        raise TypeError
+
+def ytensor_type_len(type):
+    if type == DataType.float32:
+        return 4
+    elif type == DataType.int8:
+        return 1
+    elif type == DataType.int32:
+        return 4
+    elif type == DataType.int64:
+        return 8
+    elif type == DataType.bool:
+        return 1
+    elif type == DataType.float16:
+        return 2
     else:
         print("[Error] unknown type : ", type)
         raise TypeError

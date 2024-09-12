@@ -31,7 +31,7 @@ if __name__ == "__main__":
     network = build_network(model_data, config)
 
     inputs_zeros = {"images": np.zeros((1,3,224,224)).astype(np.float32)}
-    inputs_max_shape = {"images": [16,3,224,224]}
+    inputs_max_shape = {"images": [1,3,224,224]}
     network.prepare(inputs_zeros, inputs_max_shape)
     
     inputs = {"images": img.numpy()}
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     cudart.cudaDeviceSynchronize()
     start = time.time()
     # forward
-    loops = 50
+    loops = 5000
     for i in range(loops):
         results = network.run(inputs)
     cudart.cudaDeviceSynchronize()
@@ -57,5 +57,6 @@ if __name__ == "__main__":
     print("max index:", np.argmax(out_tensor[0]))
     print("imagenet label:", get_imagenet_labels(np.argmax(out_tensor[0])))
     print("fps:", fps)
+    del network
 
     assert np.argmax(out_tensor[0]) == 22

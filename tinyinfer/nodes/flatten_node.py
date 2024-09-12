@@ -19,8 +19,7 @@ class FlattenNode(Node):
     def run(self, stream):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
-        # out_edge.tensor = in_edge.tensor.reshape(out_edge.shape)
-        out_edge.tensor.set_data_ptr(in_edge.tensor.data_ptr(), True)
+        out_edge.tensor.set_data_ptr(in_edge.tensor.data_ptr(), True, False)
 
     def setup_op_out_edges(self):
         out_edge = self.all_edges[self.output_names[0]]

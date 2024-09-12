@@ -5,6 +5,7 @@ import copy
 import torch
 from kernels import YTensor, DataType, DataLayout, TensorType
 from .utils import numpy_dtype_2_ytensor_dtype, get_np_data_ptr
+from .mempool import MemPool
 from cuda import cudart
 
 class Network:
@@ -20,6 +21,10 @@ class Network:
         self.edges_num = 0
         self.stream = None
         self.ins_max_shape = None
+        self.mempool = MemPool()
+        self.mempool_length = 0
+        self.mempool_edges_starts = None
+        self.mempool_start_ptr = 0
 
     def prepare(self, ins:list, ins_max_shape=None):
         _, self.stream = cudart.cudaStreamCreate()
@@ -122,14 +127,17 @@ class Network:
                 self.edges[key].tensor.cuda()
             elif self.config.use_gpu:
                 self.edges[key].tensor.cuda()
+        # 使用gpu mempool
+        if self.config.use_gpu:
+            self.set_mempool()
 
     def run(self, ins={}):
         # 把输入数据转到gpu
-        for key in self.edges.keys():
-            if self.edges[key].type == "input" and self.config.use_gpu:
-                in_np = ins[key]
-                self.edges[key].tensor.copy_numpy_data(get_np_data_ptr(in_np))
-                self.edges[key].shape = in_np.shape
+        for in_name in self.input_names:
+            if self.edges[in_name].type == "input" and self.config.use_gpu:
+                in_np = ins[in_name]
+                self.edges[in_name].tensor.copy_numpy_data(get_np_data_ptr(in_np))
+                self.edges[in_name].shape = in_np.shape
         
         # 每次开始前获取最新的形状
         for nodename in self.run_orders:
@@ -158,3 +166,39 @@ class Network:
     def bind_all_edges(self):
         for nodename in self.run_orders:
             self.nodes[nodename].bind_all_edges(self.edges)
+    
+    def set_mempool(self):
+        nodes_mem = {}
+        for nodename in self.run_orders:
+            node : Node = self.nodes[nodename]
+            nodes_mem[nodename] = {}
+            node_in_names = []
+            node_out_names = []
+            for edge_name in node.input_names:
+                if self.edges[edge_name].tensor.tensortype == TensorType.variable or self.edges[edge_name].tensor.tensortype == TensorType.input:
+                    node_in_names.append(edge_name)
+            for edge_name in node.output_names:
+                if self.edges[edge_name].tensor.tensortype == TensorType.variable or self.edges[edge_name].tensor.tensortype == TensorType.output:
+                    node_out_names.append(edge_name)
+            nodes_mem[nodename]["in_names"] = node_in_names
+            nodes_mem[nodename]["out_names"] = node_out_names
+        edges_mem = {}
+        for edgename, edge in self.edges.items():
+            if edge.tensor.tensortype == TensorType.variable or edge.tensor.tensortype == TensorType.input \
+                or edge.tensor.tensortype == TensorType.output :
+                memlen = edge.tensor.mem_len
+                edges_mem[edgename] = memlen
+        
+        self.mempool_length, self.mempool_edges_starts = self.mempool.update_nodes(nodes_mem, edges_mem)
+        for edgename, edgestart in self.mempool_edges_starts.items():
+            self.edges[edgename].tensor.set_data_ptr(0, True, True)
+        _, self.mempool_start_ptr = cudart.cudaMalloc(self.mempool_length)
+        for edgename, edgestart in self.mempool_edges_starts.items():
+            # print(edgename, self.mempool_start_ptr + edgestart)
+            self.edges[edgename].tensor.set_data_ptr(self.mempool_start_ptr + edgestart, True, True)
+    
+    # def __del__(self):
+    #     print("called __del__  \n\n\n")
+    #     if self.mempool_start_ptr > 0:
+    #         cudart.cudaFree(self.mempool_start_ptr)
+    #         self.mempool_start_ptr = 0

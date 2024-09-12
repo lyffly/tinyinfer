@@ -67,6 +67,8 @@ PYBIND11_MODULE(kernels, m) {
         .def_property("name", &YTensor::GetName, &YTensor::SetName)
         .def_property_readonly("rank", &YTensor::GetRank)
         .def_property_readonly("data_len", &YTensor::GetDataLen)
+        .def_property_readonly("mem_len", &YTensor::GetMemLen)
+        .def_property_readonly("mem_ptr", &YTensor::GetMemPtr)
         .def("malloc", &YTensor::Malloc)
         .def("free", &YTensor::Free)
         .def("copy_numpy_data", &YTensor::CopyNumpyData)

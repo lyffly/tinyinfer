@@ -118,6 +118,7 @@ bool YTensor::Float() {
         this->cpu_ptr = tmp;
         this->data = this->cpu_ptr;
         this->data_len = this->sizeoftype * this->length;
+        this->mem_len = this->sizeoftype * this->max_length;
     } else if (this->is_gpu and this->data_type == DataType::HALF) {
         this->data_type = DataType::FLOAT32;
         this->sizeoftype = sizeof(float);
@@ -132,6 +133,7 @@ bool YTensor::Float() {
                                                              this->length);
         this->data = this->gpu_ptr;
         this->data_len = this->sizeoftype * this->length;
+        this->mem_len = this->sizeoftype * this->max_length;
         cudaFree(tmp);
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -152,6 +154,7 @@ bool YTensor::Half() {
         this->cpu_ptr = tmp;
         this->data = this->cpu_ptr;
         this->data_len = this->sizeoftype * this->length;
+        this->mem_len = this->sizeoftype * this->max_length;
     } else if (this->is_gpu and this->data_type == DataType::FLOAT32) {
         this->data_type = DataType::HALF;
         this->sizeoftype = sizeof(half);
@@ -167,6 +170,7 @@ bool YTensor::Half() {
         this->data = this->gpu_ptr;
         cudaFree(tmp);
         this->data_len = this->sizeoftype * this->length;
+        this->mem_len = this->sizeoftype * this->max_length;
         return true;
     } else {
         printf("[Error] datatype not correct !!\n");
@@ -211,14 +215,18 @@ bool YTensor::CopyNumpyData(int64_t ptr) {
     return true;
 }
 
-void YTensor::SetDataPtr(int64_t ptr, bool is_gpu) {
-    this->is_gpu = is_gpu;
-    if (this->is_gpu) {
+void YTensor::SetDataPtr(int64_t ptr, bool is_gpu, bool is_free_original_data) {
+    if (is_gpu) {
+        if (this->gpu_ptr != nullptr and is_free_original_data) {
+            cudaFree(this->gpu_ptr);
+        }
         this->data = (void*)ptr;
         this->gpu_ptr = (void*)ptr;
+        this->is_gpu = is_gpu;
     } else {
         this->data = (void*)ptr;
         this->cpu_ptr = (void*)ptr;
+        this->is_gpu = is_gpu;
     }
 }
 
@@ -240,6 +248,7 @@ std::vector<int64_t> YTensor::GetShape() {
 void YTensor::SetMaxShape(std::vector<int64_t> max_shape) {
     this->max_shape = max_shape;
     this->max_length = GetProdofVector(max_shape);
+    this->mem_len = this->sizeoftype * this->max_length;
 }
 
 std::vector<int64_t> YTensor::GetMaxShape() {
@@ -264,6 +273,7 @@ void YTensor::SetDataType(DataType type) {
     this->sizeoftype = GetSizeofDtype(type);
     this->data_type = type;
     this->data_len = this->sizeoftype * this->length;
+    this->mem_len = this->sizeoftype * this->max_length;
 }
 
 DataLayout YTensor::GetDataLayout() {
@@ -288,6 +298,14 @@ int64_t YTensor::GetRank() {
 
 int64_t YTensor::GetDataLen() {
     return this->data_len;
+}
+
+int64_t YTensor::GetMemLen() {
+    return this->mem_len;
+}
+
+int64_t YTensor::GetMemPtr() {
+    return (int64_t)(this->data);
 }
 
 void YTensor::SetName(std::string name) {

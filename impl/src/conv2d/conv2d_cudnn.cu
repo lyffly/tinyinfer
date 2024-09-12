@@ -207,8 +207,11 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
 
     // conv bias activation
     {
-        // printf("[conv] algo %d, space size %ld, ptr %p \n\n", (int)algo_, space_size_,
+        // printf("[conv] algo %d, space size %ld, ptr %p \n", (int)algo_, space_size_,
         //        (void*)workspace_ptr);
+        // printf("[conv] inptr %p, w ptr %p, b ptr %p \n", (void*)in_ptr, (void*)weight_ptr,
+        //        (void*)bias_ptr);
+        // printf("[conv] outptr %p \n", (void*)out_ptr);
 
         cudnnStatus_t Error = cudnnConvolutionBiasActivationForward(
             cudnn_handle, &alpha_, desc_->input_desc, (void*)in_ptr, desc_->kernel_desc,
@@ -217,7 +220,7 @@ bool conv2d_backend(int64_t in_ptr, int64_t weight_ptr, int64_t bias_ptr, int64_
             desc_->activation_desc, desc_->output_desc, (void*)out_ptr);
 
         if (Error != CUDNN_STATUS_SUCCESS) {
-            fprintf(stderr, "[Error] cudnn forward failed!\n");
+            fprintf(stderr, "[Error] cudnn conv2d forward failed!\n");
         }
     }
     return true;
