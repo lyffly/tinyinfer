@@ -166,9 +166,12 @@ class Network:
     def bind_all_edges(self):
         for nodename in self.run_orders:
             self.nodes[nodename].bind_all_edges(self.edges)
+            self.nodes[nodename].stream = self.stream
     
     def set_mempool(self):
         nodes_mem = {}
+        edges_mem = {}
+        workspace_count = 0
         for nodename in self.run_orders:
             node : Node = self.nodes[nodename]
             nodes_mem[nodename] = {}
@@ -177,12 +180,18 @@ class Network:
             for edge_name in node.input_names:
                 if self.edges[edge_name].tensor.tensortype == TensorType.variable or self.edges[edge_name].tensor.tensortype == TensorType.input:
                     node_in_names.append(edge_name)
+            workspace_size = node.get_workspace_size()
+            if workspace_size > 0:
+                workspace_count += 1
+                workspace_name = "conv_work_space_yyff_" + str(workspace_count)
+                node_in_names.append(workspace_name)
+                edges_mem[workspace_name] = workspace_size
             for edge_name in node.output_names:
                 if self.edges[edge_name].tensor.tensortype == TensorType.variable or self.edges[edge_name].tensor.tensortype == TensorType.output:
                     node_out_names.append(edge_name)
             nodes_mem[nodename]["in_names"] = node_in_names
             nodes_mem[nodename]["out_names"] = node_out_names
-        edges_mem = {}
+
         for edgename, edge in self.edges.items():
             if edge.tensor.tensortype == TensorType.variable or edge.tensor.tensortype == TensorType.input \
                 or edge.tensor.tensortype == TensorType.output :
@@ -191,11 +200,23 @@ class Network:
         
         self.mempool_length, self.mempool_edges_starts = self.mempool.update_nodes(nodes_mem, edges_mem)
         for edgename, edgestart in self.mempool_edges_starts.items():
-            self.edges[edgename].tensor.set_data_ptr(0, True, True)
+            if not "conv_work_space_yyff_" in edgename:
+                self.edges[edgename].tensor.set_data_ptr(0, True, True)
         _, self.mempool_start_ptr = cudart.cudaMalloc(self.mempool_length)
         for edgename, edgestart in self.mempool_edges_starts.items():
             # print(edgename, self.mempool_start_ptr + edgestart)
-            self.edges[edgename].tensor.set_data_ptr(self.mempool_start_ptr + edgestart, True, True)
+            if not "conv_work_space_yyff_" in edgename:
+                self.edges[edgename].tensor.set_data_ptr(self.mempool_start_ptr + edgestart, True, True)
+        # set conv workspace
+        for nodename in self.run_orders:
+            node : Node = self.nodes[nodename]
+            if node.type == "Conv" and len(nodes_mem[nodename]["in_names"]) > 1:
+                wpkspace_name = nodes_mem[nodename]["in_names"][1]
+                workspace_ptr = self.mempool_start_ptr + self.mempool_edges_starts[wpkspace_name]
+                node.set_workspace_ptr(workspace_ptr)
+                # print (wpkspace_name, workspace_ptr)
+                
+            
     
     # def __del__(self):
     #     print("called __del__  \n\n\n")

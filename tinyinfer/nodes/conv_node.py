@@ -34,45 +34,45 @@ class ConvNode(Node):
         out_edge = self.all_edges[self.output_names[0]]
         try:
             # print("\n****use cudnn conv")
-            if self.algo < 0:
-                # print("[Python] conv algo init : ", self.algo)
-                self.algo = kernels.get_conv2d_algo(
-                    self.params.kernel_shape,
-                    self.params.pads,
-                    self.params.strides,
-                    self.params.dilations,
-                    self.params.group,
-                    in_edge.shape,
-                    w_edge.shape,
-                    b_edge.shape,
-                    out_edge.shape,
-                    self.op_precision,
-                    self.support_layout,
-                    stream,
-                    self.desc,
-                )
-                assert self.algo >= 0
-                # print("[Python] conv algo find : ", self.algo)
-                self.workspace_size = kernels.get_conv2d_workspace_size(
-                    self.params.kernel_shape,
-                    self.params.pads,
-                    self.params.strides,
-                    self.params.dilations,
-                    self.params.group,
-                    in_edge.shape,
-                    w_edge.shape,
-                    b_edge.shape,
-                    out_edge.shape,
-                    self.op_precision,
-                    self.support_layout,
-                    self.algo,
-                    stream,
-                    self.desc,
-                )
-                assert self.workspace_size >= 0
-                if self.workspace_size > 0:
-                    _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
-                # print("[Python] conv workspace size : ", self.workspace_size)
+            # if self.algo < 0:
+            #     # print("[Python] conv algo init : ", self.algo)
+            #     self.algo = kernels.get_conv2d_algo(
+            #         self.params.kernel_shape,
+            #         self.params.pads,
+            #         self.params.strides,
+            #         self.params.dilations,
+            #         self.params.group,
+            #         in_edge.shape,
+            #         w_edge.shape,
+            #         b_edge.shape,
+            #         out_edge.shape,
+            #         self.op_precision,
+            #         self.support_layout,
+            #         stream,
+            #         self.desc,
+            #     )
+            #     assert self.algo >= 0
+            #     # print("[Python] conv algo find : ", self.algo)
+            #     self.workspace_size = kernels.get_conv2d_workspace_size(
+            #         self.params.kernel_shape,
+            #         self.params.pads,
+            #         self.params.strides,
+            #         self.params.dilations,
+            #         self.params.group,
+            #         in_edge.shape,
+            #         w_edge.shape,
+            #         b_edge.shape,
+            #         out_edge.shape,
+            #         self.op_precision,
+            #         self.support_layout,
+            #         self.algo,
+            #         stream,
+            #         self.desc,
+            #     )
+            #     assert self.workspace_size >= 0
+            #     if self.workspace_size > 0:
+            #         _, self.workspace_ptr = cudart.cudaMalloc(self.workspace_size)
+            #     print("[Python] conv workspace size : ", self.workspace_size)
 
             if self.support_layout == "nhwc":
                 kernels.layout_convert(
@@ -144,6 +144,9 @@ class ConvNode(Node):
         except:
             raise IOError
 
+        # print("\nconv out")
+        # out_edge.tensor.print(20)
+
     def setup_op_out_edges(self):
         self.desc = kernels.create_conv2d_desc()
         in_edge = self.all_edges[self.input_names[0]]
@@ -210,3 +213,55 @@ class ConvNode(Node):
     def set_op_max_shapes(self):
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.max_shape = out_edge.shape
+    
+    def get_workspace_size(self):
+        in_edge = self.all_edges[self.input_names[0]]
+        w_edge = self.all_edges[self.input_names[1]]
+        b_edge = None
+        if len(self.input_names) > 2:
+            b_edge = self.all_edges[self.input_names[2]]
+        out_edge = self.all_edges[self.output_names[0]]
+        try:
+            if self.algo < 0:
+                # print("[Python] conv algo init : ", self.algo)
+                self.algo = kernels.get_conv2d_algo(
+                    self.params.kernel_shape,
+                    self.params.pads,
+                    self.params.strides,
+                    self.params.dilations,
+                    self.params.group,
+                    in_edge.shape,
+                    w_edge.shape,
+                    b_edge.shape,
+                    out_edge.shape,
+                    self.op_precision,
+                    self.support_layout,
+                    self.stream,
+                    self.desc,
+                )
+                assert self.algo >= 0
+                # print("[Python] conv algo find : ", self.algo)
+                self.workspace_size = kernels.get_conv2d_workspace_size(
+                    self.params.kernel_shape,
+                    self.params.pads,
+                    self.params.strides,
+                    self.params.dilations,
+                    self.params.group,
+                    in_edge.shape,
+                    w_edge.shape,
+                    b_edge.shape,
+                    out_edge.shape,
+                    self.op_precision,
+                    self.support_layout,
+                    self.algo,
+                    self.stream,
+                    self.desc,
+                )
+                assert self.workspace_size >= 0
+                # print("[Python] conv workspace size : ", self.workspace_size)
+        except:
+            raise IOError
+        return self.workspace_size
+
+    def set_workspace_ptr(self, ptr):
+        self.workspace_ptr = ptr

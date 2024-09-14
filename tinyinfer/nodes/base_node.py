@@ -24,6 +24,7 @@ class Node:
         self.all_edges = None
         self.network_precision = "float16"
         self.op_precision = "float16"
+        self.stream = None
 
     def bind_all_edges(self, edges):
         self.all_edges = edges
@@ -35,3 +36,9 @@ class Node:
     def print(self):
         print("\nnode name:", self.name)
         print("     type:", self.type)
+    
+    def get_workspace_size(self):
+        return 0
+
+    def set_workspace_ptr(self, ptr):
+        pass
