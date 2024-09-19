@@ -40,7 +40,6 @@ repos:
             - --statistics
         exclude: ^benchmark/|^test_tipc/
 
-repos:
 -   repo: https://github.com/doublify/pre-commit-clang-format.git
     rev: 62302476d0da01515660132d76902359bed0f782
     hooks:
