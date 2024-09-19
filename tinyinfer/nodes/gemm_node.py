@@ -136,21 +136,21 @@ class GemmNode(Node):
         else:
             print("[Error] gemm infer shape not support!!")
 
-    def set_op_precision(self, dtype:str):
+    def set_op_precision(self, dtype: str):
         supported = ["float32", "float16"]
         in_edge = self.all_edges[self.input_names[0]]
-        if in_edge.dtype in supported :
+        if in_edge.dtype in supported:
             self.op_precision = dtype
-        else :
+        else:
             self.op_precision = in_edge.dtype
-    
+
     def get_op_support_precision(self, precision):
         supported = ["float32", "float16"]
         if precision in supported:
             return True
         else:
             return False
-    
+
     def set_op_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]

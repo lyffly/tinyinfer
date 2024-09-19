@@ -82,10 +82,10 @@ class PoolNode(Node):
                 out_edge.create(out_edge.shape, "float16")
             else:
                 print("[Error] maxpool infer shape not support!!")
-        else :
+        else:
             print("[Error] pool type not support yet !!")
             raise IOError
-        
+
         kernels.setup_pooling_descriptor(
             self.params.kernel_shape,
             self.params.pads,
@@ -98,14 +98,14 @@ class PoolNode(Node):
             self.desc,
         )
 
-    def set_op_precision(self, dtype:str):
+    def set_op_precision(self, dtype: str):
         supported = ["float32", "float16"]
         in_edge = self.all_edges[self.input_names[0]]
-        if in_edge.dtype in supported :
+        if in_edge.dtype in supported:
             self.op_precision = dtype
-        else :
+        else:
             self.op_precision = in_edge.dtype
-    
+
     def get_op_support_precision(self, precision):
         supported = ["float32", "float16"]
         if precision in supported:
@@ -132,7 +132,7 @@ class PoolNode(Node):
             oh = math.floor((h + padh * 2 - ((kh - 1) * dilationh + 1)) / strideh + 1)
             ow = math.floor((w + padw * 2 - ((kw - 1) * dilationw + 1)) / stridew + 1)
             out_edge.set_shape([n, c, oh, ow])
-        else :
+        else:
             print("[Error] pool not support yet !!")
             raise IOError
 

@@ -36,7 +36,7 @@ class Node:
     def print(self):
         print("\nnode name:", self.name)
         print("     type:", self.type)
-    
+
     def get_workspace_size(self):
         return 0
 

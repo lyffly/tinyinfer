@@ -51,20 +51,20 @@ class CastNode(Node):
 
     def infer_layouts(self):
         pass
-    
-    def set_op_precision(self, dtype:str):
+
+    def set_op_precision(self, dtype: str):
         supported = ["float32", "float16"]
         in_edge = self.all_edges[self.input_names[0]]
-        if in_edge.dtype in supported :
+        if in_edge.dtype in supported:
             self.op_precision = dtype
-        else :
+        else:
             self.op_precision = in_edge.dtype
-    
+
     def set_op_shapes(self):
         in_edge = self.all_edges[self.input_names[0]]
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.set_shape(in_edge.shape)
-    
+
     def set_op_max_shapes(self):
         out_edge = self.all_edges[self.output_names[0]]
         out_edge.max_shape = out_edge.shape
