@@ -321,10 +321,12 @@ void YTensor::Print(int64_t len) {
         checkCudaStatus(cudaMemcpy(this->cpu_ptr, this->gpu_ptr, this->sizeoftype * this->length,
                                    cudaMemcpyDeviceToHost));
     }
-    printf("data: ");
+    printf("\n ytensor data: ");
     for (auto i = 0; i < len; i++) {
         if (this->data_type == DataType::FLOAT32) {
             printf("%f, ", ((float*)this->cpu_ptr)[i]);
+        } else if (this->data_type == DataType::FLOAT16) {
+            printf("%f, ", __half2float(((half*)this->cpu_ptr)[i]));
         }
     }
     printf("\n");

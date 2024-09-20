@@ -92,3 +92,34 @@ class GatherParams:
 class SliceParams:
     def __init__(self):
         self.axis = None
+
+
+class Qwen2Params:
+    def __init__(self):
+        self.block_count = 0
+        self.context_length = 0
+        self.version = 0
+        self.tensor_count = 0
+        self.kv_count = 0
+        self.name = 0
+        self.file_type = 0
+        self.quantization_version = 0
+        self.block_count = 0
+        self.context_length = 0
+        self.embedding_length = 0
+        self.feed_forward_length = 0
+        self.attention_head_count = 0
+        self.attention_head_count_kv = 0
+        self.attention_layer_norm_rms_epsilon = 0
+        self.rope_freq_base = 0
+        self.tokenizer_model = 0
+        self.tokenizer_pre = 0
+        self.tokenizer_tokens = 0
+        self.tokenizer_token_type = 0
+        self.tokenizer_merges = 0
+        self.tokenizer_eos_token_id = 0
+        self.tokenizer_padding_token_id = 0
+        self.tokenizer_bos_token_id = 0
+        self.tokenizer_add_bos_token = 0
+        self.tokenizer_scores = 0
+        self.tokenizer_chat_template = 0
