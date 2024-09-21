@@ -11,4 +11,6 @@ from .resize_node import ResizeNode
 from .slice_node import SliceNode
 from .softmax_node import SoftmaxNode
 from .transpose_node import TransposeNode
+from .silu_node import SiluNode
+from .rms_norm_node import RmsNormNode
 from .base_node import Node
