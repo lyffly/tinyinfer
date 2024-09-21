@@ -48,10 +48,34 @@ class Qwen2Model(Network):
         self.run_orders.append(node.name)
         return out_name
 
+    def add_add(self, in_name: str):
+        node_name = in_name[0:-4] + ".add"
+        node = ElementwiseNode()
+        node.name = node_name
+        node.type = "Add"
+        out_name = node_name + ".out"
+        node.input_names = [in_name]
+        node.output_names = [out_name]
+        self.nodes[node.name] = node
+        self.run_orders.append(node.name)
+        return out_name
+
     def add_mul(self, in_name: str, other_name: str):
         node_name = in_name[0:-4] + ".mul"
         node = ElementwiseNode()
         node.type = "Mul"
+        node.name = node_name
+        out_name = node_name + ".out"
+        node.input_names = [in_name, other_name]
+        node.output_names = [out_name]
+        self.nodes[node.name] = node
+        self.run_orders.append(node.name)
+        return out_name
+
+    def add_div(self, in_name: str, other_name: str):
+        node_name = in_name[0:-4] + ".div"
+        node = ElementwiseNode()
+        node.type = "Div"
         node.name = node_name
         out_name = node_name + ".out"
         node.input_names = [in_name, other_name]
@@ -80,15 +104,42 @@ class Qwen2Model(Network):
 
         return down_out
 
-    def add_attention(self, layer_id):
+    def add_attention(self, layer_id, in_name):
+        norm_wts_name = "blk.{}.attn_norm.weight".format(layer_id)
+        norm_out = self.add_rms_norm(in_name, norm_wts_name)
+
         q_wts_name = "blk.{}.attn_q.weight".format(layer_id)
         q_bias_name = "blk.{}.attn_q.bias".format(layer_id)
+        q_out = self.add_gemm(norm_out, q_wts_name, q_bias_name)
+
         k_wts_name = "blk.{}.attn_k.weight".format(layer_id)
         k_bias_name = "blk.{}.attn_k.bias".format(layer_id)
+        k_out = self.add_gemm(norm_out, k_wts_name, k_bias_name)
+
         v_wts_name = "blk.{}.attn_v.weight".format(layer_id)
         v_bias_name = "blk.{}.attn_v.bias".format(layer_id)
+        v_out = self.add_gemm(norm_out, v_wts_name, v_bias_name)
+
+        # rope todo
+
+        # repeat kv
+
+        # attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        # causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
+        # attn_weights = attn_weights + causal_mask
+
+        # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+
+        # attn_output = torch.matmul(attn_weights, value_states)
+
+        # attn_output = attn_output.transpose(1, 2).contiguous()
+        # attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+        # attn_output = self.o_proj(attn_output)
+
         out_wts_name = "blk.{}.attn_output.weight".format(layer_id)
-        norm_wts_name = "blk.{}.attn_norm.weight".format(layer_id)
+
         pass
 
     def add_decode_layer(self, layer_id):
