@@ -13,4 +13,5 @@ from .softmax_node import SoftmaxNode
 from .transpose_node import TransposeNode
 from .silu_node import SiluNode
 from .rms_norm_node import RmsNormNode
+from .repeat_kv_node import RepeatKVNode
 from .base_node import Node

@@ -81,7 +81,7 @@ class SplitParams:
 
 class SoftmaxParams:
     def __init__(self):
-        self.axis = None
+        self.axis = -1
 
 
 class GatherParams:
@@ -92,6 +92,11 @@ class GatherParams:
 class SliceParams:
     def __init__(self):
         self.axis = None
+
+
+class RmsNormParams:
+    def __init__(self):
+        self.eps = 1e-7
 
 
 class Qwen2Params:

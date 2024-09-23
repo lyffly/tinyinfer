@@ -1,5 +1,5 @@
 import read_gguf
-from params import Qwen2Params
+from params import Qwen2Params, RmsNormParams
 from network import Network
 import numpy as np
 from .nodes import *
@@ -33,6 +33,9 @@ class Qwen2Model(Network):
         out_name = node_name + ".out"
         node.input_names = [in_name, w_name]
         node.output_names = [out_name]
+        params = RmsNormParams()
+        params.eps = self.params.attention_layer_norm_rms_epsilon
+        node.params = params
         self.nodes[node.name] = node
         self.run_orders.append(node.name)
         return out_name
@@ -79,6 +82,28 @@ class Qwen2Model(Network):
         node.name = node_name
         out_name = node_name + ".out"
         node.input_names = [in_name, other_name]
+        node.output_names = [out_name]
+        self.nodes[node.name] = node
+        self.run_orders.append(node.name)
+        return out_name
+
+    def add_softmax(self, in_name: str):
+        node_name = in_name[0:-4] + ".softmax"
+        node = SoftmaxNode()
+        node.name = node_name
+        out_name = node_name + ".out"
+        node.input_names = [in_name]
+        node.output_names = [out_name]
+        self.nodes[node.name] = node
+        self.run_orders.append(node.name)
+        return out_name
+
+    def add_repeat_kv(self, in_name: str):
+        node_name = in_name[0:-4] + ".repeatkv"
+        node = RepeatKVNode()
+        node.name = node_name
+        out_name = node_name + ".out"
+        node.input_names = [in_name]
         node.output_names = [out_name]
         self.nodes[node.name] = node
         self.run_orders.append(node.name)
