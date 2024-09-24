@@ -14,4 +14,5 @@ from .transpose_node import TransposeNode
 from .silu_node import SiluNode
 from .rms_norm_node import RmsNormNode
 from .repeat_kv_node import RepeatKVNode
+from .apply_rope_node import ApplyRopeNode
 from .base_node import Node

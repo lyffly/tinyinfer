@@ -109,6 +109,17 @@ class Qwen2Model(Network):
         self.run_orders.append(node.name)
         return out_name
 
+    def add_apply_rope(self, in_name: str, freqs_complex_name: str):
+        node_name = in_name[0:-4] + ".apply_rope"
+        node = ApplyRopeNode()
+        node.name = node_name
+        out_name = node_name + ".out"
+        node.input_names = [in_name, freqs_complex_name]
+        node.output_names = [out_name]
+        self.nodes[node.name] = node
+        self.run_orders.append(node.name)
+        return out_name
+
     def add_ffn(self, layer_id, in_name):
         ffn_norm_weight_name = "blk.{}.ffn_norm.weight".format(layer_id)
         norm_out = self.add_rms_norm(in_name, ffn_norm_weight_name)
@@ -146,8 +157,13 @@ class Qwen2Model(Network):
         v_out = self.add_gemm(norm_out, v_wts_name, v_bias_name)
 
         # rope todo
+        freqs_complex_name = "TODO"
+        q_out = self.add_apply_rope(q_out, freqs_complex_name)
+        k_out = self.add_apply_rope(k_out, freqs_complex_name)
 
         # repeat kv
+        k_out = self.add_repeat_kv(k_out)
+        v_out = self.add_repeat_kv(v_out)
 
         # attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
